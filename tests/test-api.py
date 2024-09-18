@@ -1,19 +1,16 @@
-import requests
+import requests, json
+
+def testUser():
+    jsonUser = {
+            "username": "Fernando",
+            "password": "Password",
+            "email": "email",
+            "id": 123,
+            "is_active": True
+        }
+    data = json.dumps(jsonUser)
+    response = requests.post("http://localhost:8000/todo", data=data).json()
+    print(response)
 
 if __name__ == "__main__":
-    # test index
-    response = requests.get("http://localhost:8000/").content
-    print(f'Index: {response}')
-
-    # test /world
-    response = requests.get("http://localhost:8000/world").content
-    print(f'World: {response}')
-
-    # test /hello
-
-    response = requests.get("http://localhost:8000/hello/Fernando").content
-    print(f'Hello: {response}')
-    # test /hello
-
-    response = requests.get("http://localhost:8000/hello/json/Fernando").content
-    print(f'Hello (json): {response}')
+    testUser()
