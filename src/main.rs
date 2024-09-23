@@ -7,7 +7,8 @@ extern crate rocket;
 
 #[post("/todo", data = "<user>")]
 fn user_data(user: Json<user::User<'_>>) -> Json<User> {
-    user
+    let new_user = user::from_json(user);
+    Json(new_user)
 }
 
 #[launch]
