@@ -1,0 +1,10 @@
+services:
+  db:
+    image: mysql:latest
+    container_name: ferchat-rust-db
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+    volumes:
+      - /home/fernando/dev/ferchat-api-rust/database_docker/db:/var/lib/mysql
+    ports:
+      - "3306:3306"

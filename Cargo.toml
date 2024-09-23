@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 rocket = { version = "0.5.1", features = ["json"] }
+mysql = "25.0.1"

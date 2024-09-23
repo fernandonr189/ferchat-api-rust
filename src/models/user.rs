@@ -1,16 +1,57 @@
+use crate::models::traits::Repository;
+use mysql::prelude::*;
+use mysql::*;
 use rocket::serde::{json::Json, Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
-pub struct User<'a> {
-    pub username: &'a str,
-    pub password: &'a str,
+pub struct User {
+    pub username: String,
+    pub password: Option<String>,
     pub id: i32,
     pub is_active: bool,
-    pub email: &'a str,
+    pub email: String,
 }
 
-pub fn from_json<'r>(data: Json<User<'r>>) -> User<'r> {
+impl Repository for User {
+    fn insert(&self, conn: &mut PooledConn) -> Result<u64, mysql::Error> {
+        conn.exec_drop(
+            r"INSERT INTO users (username, password, email, is_active) VALUES (:username, :password, :email, :is_active)",
+            params! {
+                "username" => &self.username,
+                "password" => &self.password,
+                "email" => &self.email,
+                "is_active" => self.is_active,
+            },
+        ).expect("Failed to insert user.");
+        Ok(200)
+    }
+}
+
+impl FromRow for User {
+    fn from_row(row: Row) -> Self {
+        let (id, username, password, email, is_active) = mysql::from_row(row); // Use from_row helper
+        User {
+            username,
+            password,
+            id,
+            is_active,
+            email,
+        }
+    }
+    fn from_row_opt(row: Row) -> Result<User, mysql::FromRowError> {
+        let (id, username, password, email, is_active) = mysql::from_row_opt(row)?;
+        Ok(User {
+            username,
+            password,
+            id,
+            is_active,
+            email,
+        })
+    }
+}
+
+pub fn from_json(data: Json<User>) -> User {
     let new_user = User {
         username: data.0.username,
         password: data.0.password,

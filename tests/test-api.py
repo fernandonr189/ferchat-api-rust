@@ -11,7 +11,7 @@ def print_response(response):
         print(response.text)
 
 
-def testUser():
+def testInsertUser():
     jsonUser = {
         "username": "Fernando",
         "password": "Password",
@@ -21,9 +21,9 @@ def testUser():
     }
 
     data = json.dumps(jsonUser)
-    response = requests.post("http://localhost:8000/todo", data=data)
+    response = requests.post("http://localhost:8000/users/signup", data=data)
     print_response(response)
 
 
 if __name__ == "__main__":
-    testUser()
+    testInsertUser()

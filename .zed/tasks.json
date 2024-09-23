@@ -18,6 +18,24 @@
     "shell": "system"
   },
   {
+    "label": "Run db container",
+    "command": "cd ./database_docker/; docker-compose up -d",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always",
+    "hide": "never",
+    "shell": "system"
+  },
+  {
+    "label": "Stop db container",
+    "command": "cd ./database_docker/; docker-compose down",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always",
+    "hide": "never",
+    "shell": "system"
+  },
+  {
     "label": "Test",
     "command": "source ./tests/venv/bin/activate.fish; python ./tests/test-api.py",
     "use_new_terminal": false,
