@@ -1,3 +1,4 @@
 /target
 /tests/venv
+/tests/.venv
 /database_docker/db
