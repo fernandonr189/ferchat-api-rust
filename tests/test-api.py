@@ -18,9 +18,9 @@ def test_get_users():
 
 def test_insert_user():
     jsonUser = {
-        "username": "Fercho189",
+        "username": "Fercho1892",
         "password": "Password",
-        "email": "email3",
+        "email": "email33",
         "id": 123,
         "is_active": True,
     }

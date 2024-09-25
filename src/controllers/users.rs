@@ -60,6 +60,30 @@ pub fn create_user<'r>(user: Json<User>) -> status::Custom<Json<Response<'r, Str
             )
         }
     };
+    let query_str = format!(
+        "SELECT id, username, email, is_active FROM users WHERE username = '{}' OR email = '{}'",
+        new_user.username, new_user.email
+    );
+    println!("{}", query_str);
+    let users_result = query::<User>(&pool, &query_str);
+    match users_result {
+        Ok(users) => {
+            if users.len() > 0 {
+                return status::Custom(
+                    Status::BadRequest,
+                    Json(Response {
+                        error_code: None,
+                        message: "User already exists",
+                        data: None,
+                    }),
+                );
+            }
+        }
+        Err(_e) => {
+            println!("No user found");
+        }
+    }
+
     let inserted = insert(&pool, &new_user);
     match inserted {
         Ok(_is_inserted) => {
