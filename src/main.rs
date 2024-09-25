@@ -11,6 +11,13 @@ use util::sql::*;
 #[macro_use]
 extern crate rocket;
 
+#[get("/get")]
+fn get_users<'r>() -> status::Custom<Json<Vec<User>>> {
+    let pool = create_pool();
+    let users = query(&pool, "SELECT * FROM users").expect("Could not get users");
+    status::Custom(Status::Ok, Json(users))
+}
+
 #[post("/signup", data = "<user>")]
 fn create_user<'r>(user: Json<User>) -> status::Custom<Json<Response<'r>>> {
     let new_user = from_json(user);
@@ -37,5 +44,7 @@ fn create_user<'r>(user: Json<User>) -> status::Custom<Json<Response<'r>>> {
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/users", routes![create_user])
+    rocket::build()
+        .mount("/users", routes![create_user])
+        .mount("/users", routes![get_users])
 }
