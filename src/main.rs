@@ -3,6 +3,8 @@ mod util;
 use models::response::Response;
 use models::user::from_json;
 use models::user::User;
+use rocket::http::Status;
+use rocket::response::status;
 use rocket::serde::json::Json;
 use util::sql::*;
 
@@ -10,20 +12,26 @@ use util::sql::*;
 extern crate rocket;
 
 #[post("/signup", data = "<user>")]
-fn create_user<'r>(user: Json<User>) -> Json<Response<'r>> {
+fn create_user<'r>(user: Json<User>) -> status::Custom<Json<Response<'r>>> {
     let new_user = from_json(user);
     let pool = create_pool();
     let is_inserted = insert(&pool, &new_user).unwrap();
     if is_inserted {
-        Json(Response {
-            status_code: 200,
-            message: "User created!",
-        })
+        status::Custom(
+            Status::Ok,
+            Json(Response {
+                error_code: None,
+                message: "User created!",
+            }),
+        )
     } else {
-        Json(Response {
-            status_code: 400,
-            message: "User not created!",
-        })
+        status::Custom(
+            Status::BadRequest,
+            Json(Response {
+                error_code: Some(400),
+                message: "User not created!",
+            }),
+        )
     }
 }
 
