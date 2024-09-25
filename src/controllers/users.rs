@@ -60,24 +60,27 @@ pub fn create_user<'r>(user: Json<User>) -> status::Custom<Json<Response<'r, Str
             )
         }
     };
-    let is_inserted = insert(&pool, &new_user).unwrap();
-    if is_inserted {
-        status::Custom(
-            Status::Ok,
-            Json(Response {
-                error_code: None,
-                message: "User created!",
-                data: None,
-            }),
-        )
-    } else {
-        status::Custom(
-            Status::BadRequest,
-            Json(Response {
-                error_code: Some(400),
-                message: "User not created!",
-                data: None,
-            }),
-        )
-    }
+    let inserted = insert(&pool, &new_user);
+    match inserted {
+        Ok(_is_inserted) => {
+            return status::Custom(
+                Status::Ok,
+                Json(Response {
+                    error_code: None,
+                    message: "User created!",
+                    data: None,
+                }),
+            )
+        }
+        Err(_e) => {
+            return status::Custom(
+                Status::BadRequest,
+                Json(Response {
+                    error_code: None,
+                    message: "User not created",
+                    data: None,
+                }),
+            )
+        }
+    };
 }

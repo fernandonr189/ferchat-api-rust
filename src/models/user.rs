@@ -27,12 +27,10 @@ impl Insertable for User {
             },
         ) {
             Ok(_) => {
-                println!("User created");
                 Ok(true)
             },
-            Err(_) => {
-                println!("user not created");
-                Ok(false)
+            Err(e) => {
+                Err(e)
             }
         }
     }

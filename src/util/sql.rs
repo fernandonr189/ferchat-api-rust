@@ -8,7 +8,7 @@ pub fn create_pool() -> Result<Pool, mysql::Error> {
     Pool::new(url)
 }
 
-pub fn insert<'r>(pool: &Pool, object: &dyn Insertable) -> Result<bool> {
+pub fn insert<'r>(pool: &Pool, object: &dyn Insertable) -> Result<bool, Error> {
     let mut conn: PooledConn = pool.get_conn().expect("Failed to get connection.");
     let result = object.insert(&mut conn);
     result
