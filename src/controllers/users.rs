@@ -64,7 +64,6 @@ pub fn create_user<'r>(user: Json<User>) -> status::Custom<Json<Response<'r, Str
         "SELECT id, username, email, is_active FROM users WHERE username = '{}' OR email = '{}'",
         new_user.username, new_user.email
     );
-    println!("{}", query_str);
     let users_result = query::<User>(&pool, &query_str);
     match users_result {
         Ok(users) => {
@@ -80,7 +79,7 @@ pub fn create_user<'r>(user: Json<User>) -> status::Custom<Json<Response<'r, Str
             }
         }
         Err(_e) => {
-            println!("No user found");
+            
         }
     }
 
