@@ -22,7 +22,7 @@ pub fn get_users<'r>() -> status::Custom<Json<Response<'r, Vec<User>>>> {
             )
         }
     };
-    let users_result = query(&pool, "SELECT * FROM users");
+    let users_result = query(&pool, "SELECT id, username, email, is_active FROM users");
     match users_result {
         Ok(users) => status::Custom(
             Status::Ok,

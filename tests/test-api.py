@@ -10,15 +10,17 @@ def print_response(response):
         print("Exception" + str(e))
         print(response.text)
 
+
 def test_get_users():
     response = requests.get("http://localhost:8000/users/get")
     print_response(response)
 
+
 def test_insert_user():
     jsonUser = {
-        "username": "puchatron",
+        "username": "Fercho189",
         "password": "Password",
-        "email": "email2",
+        "email": "email3",
         "id": 123,
         "is_active": True,
     }
@@ -29,5 +31,5 @@ def test_insert_user():
 
 
 if __name__ == "__main__":
-    #test_insert_user()
+    test_insert_user()
     test_get_users()
