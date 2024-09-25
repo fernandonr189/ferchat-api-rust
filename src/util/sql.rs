@@ -3,10 +3,9 @@ use mysql::Error;
 use mysql::*;
 use prelude::{FromRow, Queryable};
 
-pub fn create_pool() -> Pool {
+pub fn create_pool() -> Result<Pool, mysql::Error> {
     let url = "mysql://root:password@localhost:3306/users";
-    let pool = Pool::new(url).expect("Failed to create pool.");
-    pool
+    Pool::new(url)
 }
 
 pub fn insert<'r>(pool: &Pool, object: &dyn Insertable) -> Result<bool> {
@@ -17,9 +16,5 @@ pub fn insert<'r>(pool: &Pool, object: &dyn Insertable) -> Result<bool> {
 
 pub fn query<'r, T: FromRow>(pool: &Pool, query: &'r str) -> Result<Vec<T>, Error> {
     let mut conn: PooledConn = pool.get_conn().expect("Failed to get a connection");
-    let selected_objects = conn.query(query);
-    match selected_objects {
-        Ok(objects) => Ok(objects),
-        Err(e) => Err(e),
-    }
+    conn.query(query)
 }
