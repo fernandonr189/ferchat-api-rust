@@ -6,22 +6,28 @@ use rocket::http::Status;
 use rocket::response::status;
 use rocket::serde::json::Json;
 
+macro_rules! match_pool {
+    ($a: expr, $b: expr, $c: expr) => {
+        match $a {
+            Ok(exp) => exp,
+            Err(_e) => {
+                return status::Custom(
+                Status::InternalServerError,
+                Json(Response {
+                    error_code: Some($b),
+                    message: $c,
+                    data: None
+                })
+            )
+            }
+        }
+    }
+}
+
 #[get("/get")]
 pub fn get_users<'r>() -> status::Custom<Json<Response<'r, Vec<User>>>> {
     let new_pool = create_pool();
-    let pool = match new_pool {
-        Ok(pool) => pool,
-        Err(_e) => {
-            return status::Custom(
-                Status::InternalServerError,
-                Json(Response {
-                    error_code: Some(500),
-                    message: "Could not connect to database!",
-                    data: None,
-                }),
-            )
-        }
-    };
+    let pool = match_pool!(new_pool, 500, "Could not connect to database!");
     let users_result = query(&pool, "SELECT id, username, email, is_active FROM users");
     match users_result {
         Ok(users) => status::Custom(
@@ -47,19 +53,7 @@ pub fn get_users<'r>() -> status::Custom<Json<Response<'r, Vec<User>>>> {
 pub fn create_user<'r>(user: Json<User>) -> status::Custom<Json<Response<'r, String>>> {
     let new_user = from_json(user);
     let new_pool = create_pool();
-    let pool = match new_pool {
-        Ok(pool) => pool,
-        Err(_e) => {
-            return status::Custom(
-                Status::InternalServerError,
-                Json(Response {
-                    error_code: Some(500),
-                    message: "Could not connect to database!",
-                    data: None,
-                }),
-            )
-        }
-    };
+    let pool = match_pool!(new_pool, 500, "Could not connect to database!");
     let query_str = format!(
         "SELECT id, username, email, is_active FROM users WHERE username = '{}' OR email = '{}'",
         new_user.username, new_user.email
@@ -79,7 +73,14 @@ pub fn create_user<'r>(user: Json<User>) -> status::Custom<Json<Response<'r, Str
             }
         }
         Err(_e) => {
-            
+            return status::Custom(
+                Status::InternalServerError,
+                Json(Response {
+                    error_code: None,
+                    message: "There was a problem procesing the request",
+                    data: None,
+                }),
+            );
         }
     }
 
