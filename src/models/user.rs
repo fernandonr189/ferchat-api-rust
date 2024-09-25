@@ -1,4 +1,4 @@
-use crate::models::traits::Repository;
+use crate::models::traits::Insertable;
 use mysql::prelude::*;
 use mysql::*;
 use rocket::serde::{json::Json, Deserialize, Serialize};
@@ -13,9 +13,9 @@ pub struct User {
     pub email: String,
 }
 
-impl Repository for User {
-    fn insert(&self, conn: &mut PooledConn) -> Result<u64, mysql::Error> {
-        conn.exec_drop(
+impl Insertable for User {
+    fn insert(&self, conn: &mut PooledConn) -> Result<bool, mysql::Error> {
+        match conn.exec_drop(
             r"INSERT INTO users (username, password, email, is_active) VALUES (:username, :password, :email, :is_active)",
             params! {
                 "username" => &self.username,
@@ -23,8 +23,16 @@ impl Repository for User {
                 "email" => &self.email,
                 "is_active" => self.is_active,
             },
-        ).expect("Failed to insert user.");
-        Ok(200)
+        ) {
+            Ok(_) => {
+                println!("User created");
+                Ok(true)
+            },
+            Err(_) => {
+                println!("user not created");
+                Ok(false)
+            }
+        }
     }
 }
 
