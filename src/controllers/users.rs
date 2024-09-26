@@ -1,3 +1,4 @@
+use crate::match_pool;
 use crate::models::response::{Data, Response};
 use crate::models::user::from_json;
 use crate::models::user::User;
@@ -5,24 +6,6 @@ use crate::util::sql::{create_pool, insert, query};
 use rocket::http::Status;
 use rocket::response::status;
 use rocket::serde::json::Json;
-
-macro_rules! match_pool {
-    ($a: expr, $b: expr, $c: expr) => {
-        match $a {
-            Ok(exp) => exp,
-            Err(_e) => {
-                return status::Custom(
-                Status::InternalServerError,
-                Json(Response {
-                    error_code: Some($b),
-                    message: $c,
-                    data: None
-                })
-            )
-            }
-        }
-    }
-}
 
 #[get("/get")]
 pub fn get_users<'r>() -> status::Custom<Json<Response<'r, Vec<User>>>> {
