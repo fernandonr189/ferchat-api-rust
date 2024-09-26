@@ -1,4 +1,5 @@
 use crate::match_pool;
+use crate::match_response;
 use crate::models::response::{Data, Response};
 use crate::models::user::from_json;
 use crate::models::user::User;
@@ -12,24 +13,14 @@ pub fn get_users<'r>() -> status::Custom<Json<Response<'r, Vec<User>>>> {
     let new_pool = create_pool();
     let pool = match_pool!(new_pool, 500, "Could not connect to database!");
     let users_result = query(&pool, "SELECT id, username, email, is_active FROM users");
-    match users_result {
-        Ok(users) => status::Custom(
-            Status::Ok,
-            Json(Response {
-                error_code: None,
-                message: "Users retrieved!",
-                data: Some(Data::Model(users)),
-            }),
-        ),
-        Err(_e) => status::Custom(
-            Status::InternalServerError,
-            Json(Response {
-                error_code: Some(500),
-                message: "Error getting users!",
-                data: None,
-            }),
-        ),
-    }
+    match_response!(
+        users_result,
+        users,
+        "Users retrieved!",
+        Some(Data::Model(users)),
+        "Error getting users!",
+        Status::InternalServerError
+    )
 }
 
 #[post("/signup", data = "<user>")]
@@ -68,26 +59,12 @@ pub fn create_user<'r>(user: Json<User>) -> status::Custom<Json<Response<'r, Str
     }
 
     let inserted = insert(&pool, &new_user);
-    match inserted {
-        Ok(_is_inserted) => {
-            return status::Custom(
-                Status::Ok,
-                Json(Response {
-                    error_code: None,
-                    message: "User created!",
-                    data: None,
-                }),
-            )
-        }
-        Err(_e) => {
-            return status::Custom(
-                Status::BadRequest,
-                Json(Response {
-                    error_code: None,
-                    message: "User not created",
-                    data: None,
-                }),
-            )
-        }
-    };
+    match_response!(
+        inserted,
+        _is_inserted,
+        "User created!",
+        None,
+        "User not created",
+        Status::BadRequest
+    )
 }

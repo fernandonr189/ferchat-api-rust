@@ -16,3 +16,27 @@ macro_rules! match_pool {
         }
     };
 }
+
+#[macro_export]
+macro_rules! match_response {
+    ($match: expr, $dat: ident, $mOk: expr, $dOk: expr,$mErr: expr, $ErrStatus: expr) => {
+        match $match {
+            Ok($dat) => status::Custom(
+                Status::Ok,
+                Json(Response {
+                    error_code: None,
+                    message: $mOk,
+                    data: $dOk,
+                }),
+            ),
+            Err(_e) => status::Custom(
+                $ErrStatus,
+                Json(Response {
+                    error_code: None,
+                    message: $mErr,
+                    data: None,
+                }),
+            ),
+        }
+    };
+}
