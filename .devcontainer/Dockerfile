@@ -1,5 +1,7 @@
 FROM rust:alpine3.20
 
+ENV JWT_SECRET=SecretousSecret
+
 WORKDIR /workspaces/ferchat/
 
 RUN apk update && apk upgrade \

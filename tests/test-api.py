@@ -1,6 +1,8 @@
 import requests
 import json
 
+token_str = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWJqZWN0X2lkIjoxLCJleHAiOjE3Mjc0NzY0ODF9.o399M-iEf4xTHA7Ry84lSswhn9yUegX3OPoK_PZIg4w"
+
 
 def print_response(response):
     print("Status code: " + str(response.status_code))
@@ -15,6 +17,9 @@ def test_get_users():
     response = requests.get("http://localhost:8000/users/get")
     print_response(response)
 
+def get_token():
+    response = requests.post("http://localhost:8000/login")
+    print_response(response)
 
 def test_insert_user():
     jsonUser = {
@@ -31,5 +36,4 @@ def test_insert_user():
 
 
 if __name__ == "__main__":
-    test_insert_user()
-    test_get_users()
+    get_token()
