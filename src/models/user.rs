@@ -1,9 +1,7 @@
 use crate::models::traits::Insertable;
-use hex;
 use mysql::prelude::*;
 use mysql::*;
-use rocket::serde::{json::Json, Deserialize, Serialize};
-use sha2::{Digest, Sha256};
+use rocket::serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
@@ -57,19 +55,4 @@ impl FromRow for User {
             email,
         })
     }
-}
-
-pub fn from_json(data: Json<User>) -> User {
-    let mut hasher = Sha256::new();
-
-    hasher.update(data.0.password.unwrap());
-    let hashed_password = hasher.finalize();
-    let new_user = User {
-        username: data.0.username,
-        password: Some(hex::encode(hashed_password)),
-        id: data.0.id,
-        is_active: data.0.is_active,
-        email: data.0.email,
-    };
-    return new_user;
 }

@@ -8,16 +8,10 @@ use rocket::serde::{json::Json, Deserialize, Serialize};
 pub enum NetworkResponse<'r, T> {
     #[response(status = 200)]
     Ok(Json<Response<'r, T>>),
-    #[response(status = 201)]
-    Created(Json<Response<'r, T>>),
-    #[response(status = 400)]
-    BadRequest(Json<Response<'r, T>>),
     #[response(status = 401)]
     Unauthorized(Json<Response<'r, T>>),
     #[response(status = 404)]
     NotFound(Json<Response<'r, T>>),
-    #[response(status = 409)]
-    Conflict(Json<Response<'r, T>>),
     #[response(status = 500)]
     InternalServerError(Json<Response<'r, T>>),
 }
