@@ -1,44 +1,35 @@
 use crate::util::jwt;
 use jsonwebtoken::errors::ErrorKind;
 use rocket::http::Status;
-use rocket::request::{self, FromRequest, Outcome, Request};
-use rocket::serde::{Deserialize, Serialize};
+use rocket::request::{FromRequest, Outcome, Request};
+use rocket::serde::{json::Json, Deserialize, Serialize};
 
 #[derive(Responder, Debug)]
-pub enum NetworkResponse {
+pub enum NetworkResponse<'r, T> {
+    #[response(status = 200)]
+    Ok(Json<Response<'r, T>>),
     #[response(status = 201)]
-    Created(String),
+    Created(Json<Response<'r, T>>),
     #[response(status = 400)]
-    BadRequest(String),
+    BadRequest(Json<Response<'r, T>>),
     #[response(status = 401)]
-    Unauthorized(String),
+    Unauthorized(Json<Response<'r, T>>),
     #[response(status = 404)]
-    NotFound(String),
+    NotFound(Json<Response<'r, T>>),
     #[response(status = 409)]
-    Conflict(String),
+    Conflict(Json<Response<'r, T>>),
+    #[response(status = 500)]
+    InternalServerError(Json<Response<'r, T>>),
 }
 
-#[derive(Serialize)]
-#[serde(crate = "rocket::serde")]
-pub enum ResponseBody {
-    Message(String),
-    AuthToken(String),
-}
-
-#[derive(Serialize)]
-#[serde(crate = "rocket::serde")]
-pub struct ResponseStruct {
-    pub body: ResponseBody,
-}
-
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(crate = "rocket::serde")]
 pub enum Data<T> {
     Model(T),
     None,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(crate = "rocket::serde")]
 pub struct Response<'a, T> {
     pub error_code: Option<i32>,
@@ -60,9 +51,9 @@ pub struct JWT {
 
 #[rocket::async_trait]
 impl<'r> FromRequest<'r> for JWT {
-    type Error = NetworkResponse;
+    type Error = NetworkResponse<'r, String>;
 
-    async fn from_request(req: &'r Request<'_>) -> Outcome<Self, NetworkResponse> {
+    async fn from_request(req: &'r Request<'_>) -> Outcome<Self, NetworkResponse<'r, String>> {
         fn is_valid(key: &str) -> Result<Claims, ErrorKind> {
             Ok(jwt::decode_jwt(String::from(key))?)
         }
@@ -70,24 +61,38 @@ impl<'r> FromRequest<'r> for JWT {
         match req.headers().get_one("authorization") {
             None => Outcome::Error((
                 Status::Unauthorized,
-                NetworkResponse::Unauthorized(String::from("No jwt provided")),
+                NetworkResponse::Unauthorized(Json(Response {
+                    error_code: Some(401),
+                    message: "Missing Auth header",
+                    data: None,
+                })),
             )),
             Some(key) => match is_valid(key) {
                 Ok(claims) => Outcome::Success(JWT { claims }),
                 Err(err) => match &err {
                     jsonwebtoken::errors::ErrorKind::ExpiredSignature => Outcome::Error((
                         Status::Unauthorized,
-                        NetworkResponse::Unauthorized(String::from("Token has expired")),
+                        NetworkResponse::Unauthorized(Json(Response {
+                            error_code: Some(401),
+                            message: "Token has expired",
+                            data: None,
+                        })),
                     )),
                     jsonwebtoken::errors::ErrorKind::InvalidToken => Outcome::Error((
                         Status::Unauthorized,
-                        NetworkResponse::Unauthorized(String::from("Token is invalid")),
+                        NetworkResponse::Unauthorized(Json(Response {
+                            error_code: Some(401),
+                            message: "Token is invalid",
+                            data: None,
+                        })),
                     )),
                     _ => Outcome::Error((
                         Status::Unauthorized,
-                        NetworkResponse::Unauthorized(String::from(
-                            "Unknown error validating token",
-                        )),
+                        NetworkResponse::Unauthorized(Json(Response {
+                            error_code: Some(401),
+                            message: "Unknown error validating token",
+                            data: None,
+                        })),
                     )),
                 },
             },
