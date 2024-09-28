@@ -1,7 +1,11 @@
 import requests
 import json
 
-token_str = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWJqZWN0X2lkIjoxLCJleHAiOjE3Mjc0NzY0ODF9.o399M-iEf4xTHA7Ry84lSswhn9yUegX3OPoK_PZIg4w"
+token_str = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWJqZWN0X2lkIjoxLCJleHAiOjE3Mjc1NTM4ODV9.WGlzBP0oiiyher9GwkCcLMLBVq0JZeT9m0ZIBhuk1VQ"
+
+headers = {
+    "Authorization": f"Bearer {token_str}"
+}
 
 
 def print_response(response):
@@ -12,6 +16,10 @@ def print_response(response):
         print("Exception" + str(e))
         print(response.text)
 
+
+def test_login():
+    response = requests.get("http://localhost:8000/hello", headers=headers)
+    print_response(response)
 
 def test_get_users():
     response = requests.get("http://localhost:8000/users/get")
@@ -37,3 +45,4 @@ def test_insert_user():
 
 if __name__ == "__main__":
     get_token()
+    test_login()

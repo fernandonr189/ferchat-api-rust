@@ -1,7 +1,7 @@
 use crate::util::jwt;
 use jsonwebtoken::errors::ErrorKind;
 use rocket::http::Status;
-use rocket::request::{FromRequest, Outcome, Request};
+use rocket::request::{self, FromRequest, Outcome, Request};
 use rocket::serde::{json::Json, Deserialize, Serialize};
 
 #[derive(Responder, Debug)]
@@ -40,16 +40,17 @@ pub struct Claims {
     pub exp: usize,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
+#[serde(crate = "rocket::serde")]
 pub struct JWT {
     pub claims: Claims,
 }
 
 #[rocket::async_trait]
 impl<'r> FromRequest<'r> for JWT {
-    type Error = NetworkResponse<'r, String>;
+    type Error = String;
 
-    async fn from_request(req: &'r Request<'_>) -> Outcome<Self, NetworkResponse<'r, String>> {
+    async fn from_request(req: &'r Request<'_>) -> request::Outcome<Self, String> {
         fn is_valid(key: &str) -> Result<Claims, ErrorKind> {
             Ok(jwt::decode_jwt(String::from(key))?)
         }
@@ -57,38 +58,26 @@ impl<'r> FromRequest<'r> for JWT {
         match req.headers().get_one("authorization") {
             None => Outcome::Error((
                 Status::Unauthorized,
-                NetworkResponse::Unauthorized(Json(Response {
-                    error_code: Some(401),
-                    message: "Missing Auth header",
-                    data: None,
-                })),
+                String::from("Missing auth header")
             )),
             Some(key) => match is_valid(key) {
                 Ok(claims) => Outcome::Success(JWT { claims }),
                 Err(err) => match &err {
                     jsonwebtoken::errors::ErrorKind::ExpiredSignature => Outcome::Error((
                         Status::Unauthorized,
-                        NetworkResponse::Unauthorized(Json(Response {
-                            error_code: Some(401),
-                            message: "Token has expired",
-                            data: None,
-                        })),
+                        String::from("Token has expired")
                     )),
                     jsonwebtoken::errors::ErrorKind::InvalidToken => Outcome::Error((
                         Status::Unauthorized,
-                        NetworkResponse::Unauthorized(Json(Response {
-                            error_code: Some(401),
-                            message: "Token is invalid",
-                            data: None,
-                        })),
+                        String::from("Token is invalid")
+                    )),
+                    jsonwebtoken::errors::ErrorKind::InvalidAlgorithm => Outcome::Error((
+                        Status::Unauthorized,
+                        String::from("Invalid algorithm")
                     )),
                     _ => Outcome::Error((
                         Status::Unauthorized,
-                        NetworkResponse::Unauthorized(Json(Response {
-                            error_code: Some(401),
-                            message: "Unknown error validating token",
-                            data: None,
-                        })),
+                        String::from("Unknown error decoding token")
                     )),
                 },
             },

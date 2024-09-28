@@ -6,6 +6,7 @@ use controllers::catchers::not_found;
 use controllers::auth::login;
 use controllers::auth::hello_token;
 use dotenvy::dotenv;
+use controllers::catchers::unauthorized;
 
 #[macro_use]
 extern crate rocket;
@@ -18,4 +19,5 @@ fn rocket() -> _ {
         .mount("/", routes![hello_token])
         .mount("/users", routes![get_users])
         .register("/", catchers![not_found])
+        .register("/", catchers![unauthorized])
 }

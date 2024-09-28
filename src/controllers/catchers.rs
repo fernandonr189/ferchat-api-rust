@@ -10,3 +10,12 @@ pub fn not_found<'r>(_req: &Request) -> NetworkResponse<'r, Vec<User>> {
         data: None,
     }))
 }
+#[catch(401)]
+pub fn unauthorized<'r>(_req: &Request) -> NetworkResponse<'r, Vec<User>> {
+    println!("{}", _req);
+    NetworkResponse::Unauthorized(Json(Response {
+        error_code: Some(401),
+        message: "Invalid token",
+        data: None,
+    }))
+}

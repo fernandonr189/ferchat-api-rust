@@ -37,9 +37,10 @@ pub fn decode_jwt(token: String) -> Result<Claims, ErrorKind> {
     match decode::<Claims>(
         &token,
         &DecodingKey::from_secret(secret.as_bytes()),
-        &Validation::new(Algorithm::HS512),
+        &Validation::new(Algorithm::HS256),
     ) {
         Ok(token) => Ok(token.claims),
-        Err(err) => Err(err.kind().to_owned()),
+        Err(err) => Err(err.kind().to_owned())
     }
+
 }
