@@ -1,13 +1,13 @@
 [
   {
     "label": "Compile and run",
-    "command": "cargo run",
+    "command": "JWT_SECRET=$JWT cargo run",
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
     "reveal": "always",
     "hide": "never",
     "shell": "system",
-    "env": {"JWT_SECRET": "This is the jwt secret!"}
+    "env": {"JWT": "This is the jwt secret!"}
   },
   {
     "label": "Format code",

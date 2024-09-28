@@ -1,3 +1,4 @@
+pub mod request_models;
 pub mod response;
-pub mod traits;
+pub mod response_models;
 pub mod user;

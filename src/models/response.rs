@@ -56,28 +56,24 @@ impl<'r> FromRequest<'r> for JWT {
         }
 
         match req.headers().get_one("authorization") {
-            None => Outcome::Error((
-                Status::Unauthorized,
-                String::from("Missing auth header")
-            )),
+            Option::None => {
+                Outcome::Error((Status::Unauthorized, String::from("Missing auth header")))
+            }
             Some(key) => match is_valid(key) {
                 Ok(claims) => Outcome::Success(JWT { claims }),
                 Err(err) => match &err {
-                    jsonwebtoken::errors::ErrorKind::ExpiredSignature => Outcome::Error((
-                        Status::Unauthorized,
-                        String::from("Token has expired")
-                    )),
-                    jsonwebtoken::errors::ErrorKind::InvalidToken => Outcome::Error((
-                        Status::Unauthorized,
-                        String::from("Token is invalid")
-                    )),
-                    jsonwebtoken::errors::ErrorKind::InvalidAlgorithm => Outcome::Error((
-                        Status::Unauthorized,
-                        String::from("Invalid algorithm")
-                    )),
+                    jsonwebtoken::errors::ErrorKind::ExpiredSignature => {
+                        Outcome::Error((Status::Unauthorized, String::from("Token has expired")))
+                    }
+                    jsonwebtoken::errors::ErrorKind::InvalidToken => {
+                        Outcome::Error((Status::Unauthorized, String::from("Token is invalid")))
+                    }
+                    jsonwebtoken::errors::ErrorKind::InvalidAlgorithm => {
+                        Outcome::Error((Status::Unauthorized, String::from("Invalid algorithm")))
+                    }
                     _ => Outcome::Error((
                         Status::Unauthorized,
-                        String::from("Unknown error decoding token")
+                        String::from("Unknown error decoding token"),
                     )),
                 },
             },

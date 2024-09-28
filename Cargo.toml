@@ -6,8 +6,7 @@ edition = "2021"
 [dependencies]
 rocket = { version = "0.5.1", features = ["json"] }
 mysql = "25.0.1"
-sha2 = "0.10.8"
-hex = "0.4.3"
+bcrypt = "0.15.1"
 chrono = "0.4.38"
 jsonwebtoken = "9.3.0"
 dotenvy = "0.15.7"
