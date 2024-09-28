@@ -11,7 +11,7 @@ headers = {
 def print_response(response):
     print("Status code: " + str(response.status_code))
     try:
-        print("Response" + str(response.json()))
+        print(f"Response: {response.json()['data']['Model'] if response.json()['data'] != None else response.json()['message']}")
     except Exception as e:
         print("Exception" + str(e))
         print(response.text)
