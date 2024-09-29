@@ -6,6 +6,47 @@ import string
 import random
 import time
 
+lock = threading.Lock()
+
+signup_errors = 0;
+login_errors = 0;
+hello_world_errors = 0;
+
+signup_attempts = 0;
+login_attempts = 0;
+hello_world_attempts = 0;
+
+def increment_signup_errors():
+    global signup_errors
+    with lock:
+        signup_errors += 1
+
+def increment_login_errors():
+    global login_errors
+    with lock:
+        login_errors += 1
+
+def increment_hello_world_errors():
+    global hello_world_errors
+    with lock:
+        hello_world_errors += 1
+
+def increment_signup_attempts():
+    global signup_attempts
+    with lock:
+        signup_attempts += 1
+
+def increment_login_attempts():
+    global login_attempts
+    with lock:
+        login_attempts += 1
+
+def increment_hello_world_attempts():
+    global hello_world_attempts
+    with lock:
+        hello_world_attempts += 1
+
+
 headers = {
     "Content-Type": "application/json",
 }
@@ -16,6 +57,7 @@ def generate_random_string(length: int) -> str:
 base_url = "http://localhost:8000"
 
 def create_user() -> tuple[str, str]:
+    increment_signup_attempts()
     password = generate_random_string(10)
     email = generate_random_string(10) + "@gmail.com"
     username = generate_random_string(10)
@@ -27,11 +69,13 @@ def create_user() -> tuple[str, str]:
     data = json.dumps(sigup_request)
     response = requests.post("http://localhost:8000/signup", headers=headers, data=data)
     if response.status_code != 200:
+        increment_signup_errors()
         raise Exception("User not created")
     else:
         return (email, password)
 
 def login_user(user: tuple[str, str]) -> str:
+    increment_login_attempts()
     login_request = {
         "email": user[0],
         "password": user[1]
@@ -40,6 +84,7 @@ def login_user(user: tuple[str, str]) -> str:
     try:
         response = requests.post("http://localhost:8000/login", headers=headers, data=data)
         if response.status_code != 200:
+            increment_login_errors()
             raise Exception("Could not login")
         else:
             return response.json()['data']['Model']['token']
@@ -47,12 +92,14 @@ def login_user(user: tuple[str, str]) -> str:
         print(e)
 
 def hello_world(token: str):
+    increment_hello_world_attempts()
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {token}"
     }
     response = requests.get(base_url + "/hello", headers=headers)
     if response.status_code != 200:
+        increment_hello_world_errors()
         raise Exception("Could not get hello world")
 
 def test_instance():
@@ -63,13 +110,14 @@ def test_instance():
     except Exception as e:
         print(e)
 
-def test_instance():
-    user = create_user()
-    token = login_user(user)
-    hello_world(token)
-
 if __name__ == "__main__":
     with concurrent.futures.ThreadPoolExecutor() as executor:
         runs = 100000
         for _ in range(runs):
             executor.submit(test_instance)
+    print(f"Signup attempts: {signup_attempts}")
+    print(f"Login attempts: {login_attempts}")
+    print(f"Hello world attempts: {hello_world_attempts}")
+    print(f"Signup errors: {signup_errors}")
+    print(f"Login errors: {login_errors}")
+    print(f"Hello world errors: {hello_world_errors}")

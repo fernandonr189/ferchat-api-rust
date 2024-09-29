@@ -14,7 +14,7 @@ use std::env;
 pub fn create_jwt(id: i32) -> Result<String, Error> {
     let secret = env::var("JWT_SECRET").expect("JWT_SECRET must be set.");
     let expiration = Utc::now()
-        .checked_add_signed(chrono::Duration::seconds(60))
+        .checked_add_signed(chrono::Duration::hours(1))
         .expect("Invalid timestamp")
         .timestamp();
 
@@ -40,7 +40,6 @@ pub fn decode_jwt(token: String) -> Result<Claims, ErrorKind> {
         &Validation::new(Algorithm::HS256),
     ) {
         Ok(token) => Ok(token.claims),
-        Err(err) => Err(err.kind().to_owned())
+        Err(err) => Err(err.kind().to_owned()),
     }
-
 }

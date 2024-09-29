@@ -47,5 +47,6 @@ def test_signup():
 
 
 if __name__ == "__main__":
-    # token = test_login()
-    test_helloworld("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWJqZWN0X2lkIjoxLCJleHAiOjE3Mjc1NjcxNTJ9.fGixueKCnV9EgxSQkLTiv6ift7y1V_qrxWM2wYlFoqI")
+    test_signup()
+    token = test_login()
+    test_helloworld(token)
