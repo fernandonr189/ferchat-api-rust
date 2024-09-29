@@ -1,8 +1,6 @@
 import requests
 import json
 
-token_str = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWJqZWN0X2lkIjoxLCJleHAiOjE3Mjc1NTU1NTZ9.G_3J_fEete8Om1Atiz9Ztc5yektSGKch_1twf8L6jYo"
-
 headers = {
     "Content-Type": "application/json",
 }
@@ -17,13 +15,24 @@ def print_response(response):
         print(response.text)
 
 
-def test_login():
+def test_login() -> str | None:
     login_request = {
         "email": "fernandonr189@outlook.com",
         "password": "password"
     }
     data = json.dumps(login_request)
     response = requests.post("http://localhost:8000/login", headers=headers, data=data)
+    print_response(response)
+    if response.status_code != 200:
+        return None
+    return response.json()['data']['Model']['token']
+
+def test_helloworld(token_str: str):
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {token_str}"
+    }
+    response = requests.get("http://localhost:8000/hello", headers=headers)
     print_response(response)
 
 def test_signup():
@@ -38,5 +47,5 @@ def test_signup():
 
 
 if __name__ == "__main__":
-    test_signup()
-    test_login()
+    # token = test_login()
+    test_helloworld("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWJqZWN0X2lkIjoxLCJleHAiOjE3Mjc1NjcxNTJ9.fGixueKCnV9EgxSQkLTiv6ift7y1V_qrxWM2wYlFoqI")

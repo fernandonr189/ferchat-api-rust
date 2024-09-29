@@ -1,5 +1,15 @@
 [
   {
+    "label": "Run as release",
+    "command": "cargo build --release; JWT_SECRET=$JWT ./target/release/ferchat-api",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always",
+    "hide": "never",
+    "shell": "system",
+    "env": {"JWT": "Secret changed again!"}
+  },
+  {
     "label": "Compile and run",
     "command": "JWT_SECRET=$JWT cargo run",
     "use_new_terminal": false,
@@ -7,7 +17,7 @@
     "reveal": "always",
     "hide": "never",
     "shell": "system",
-    "env": {"JWT": "This is the jwt secret!"}
+    "env": {"JWT": "Secret changed again!"}
   },
   {
     "label": "Format code",
@@ -44,5 +54,14 @@
     "reveal": "always",
     "hide": "never",
     "shell": "system"
-  }
+  },
+  {
+    "label": "Stress test",
+    "command": "source ./tests/venv/bin/activate.fish; python ./tests/stress-test.py",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always",
+    "hide": "never",
+    "shell": "system"
+  },
 ]
