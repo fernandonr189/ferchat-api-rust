@@ -1,4 +1,5 @@
 use crate::match_pool;
+use crate::models::request_models::friend_acc_request::FriendAccRequest;
 use crate::models::request_models::friend_req_request::FriendReqRequest;
 use crate::models::response::Data;
 use crate::models::response::{NetworkResponse, Response, JWT};
@@ -66,6 +67,7 @@ pub fn send_request<'r>(user: JWT, req: Json<FriendReqRequest>) -> NetworkRespon
             }));
         }
         Err(_err) => {
+            println!("Error: {}", _err);
             return NetworkResponse::InternalServerError(Json(Response {
                 error_code: Some(500),
                 message: "Service is temporarily unavailable",
@@ -76,15 +78,17 @@ pub fn send_request<'r>(user: JWT, req: Json<FriendReqRequest>) -> NetworkRespon
 }
 
 #[post("/accept", format = "json", data = "<req>")]
-pub fn accept_request<'r>(user: JWT, req: Json<FriendReqRequest>) -> NetworkResponse<'r, String> {
+pub fn accept_request<'r>(user: JWT, req: Json<FriendAccRequest>) -> NetworkResponse<'r, String> {
     let new_pool = sql::create_pool();
     let pool = match_pool!(new_pool, 500, "Could not connect to database!");
     let user_id = user.claims.subject_id;
-    let target_id = req.into_inner().friend_id;
+    let acc_request = req.into_inner();
+    let target_id = acc_request.friend_id;
+    let status = acc_request.accept;
 
     let accept_friend_request_query = format!(
-        "UPDATE friends SET status = 1 WHERE user_id = GREATEST({}, {}) AND friend_id = LEAST({}, {}) AND sender_id = {}",
-        user_id, target_id, user_id, target_id, target_id);
+        "UPDATE friends SET status = {} WHERE user_id = GREATEST({}, {}) AND friend_id = LEAST({}, {}) AND sender_id = {}",
+        if status { 1 } else { 2 }, user_id, target_id, user_id, target_id, target_id);
 
     // Insert friend request into database
     let accept_fried_request: Result<(), mysql::Error> =
@@ -108,17 +112,39 @@ pub fn accept_request<'r>(user: JWT, req: Json<FriendReqRequest>) -> NetworkResp
     }
 }
 
-#[get("/get")]
-pub fn list_friends<'r>(user: JWT) -> NetworkResponse<'r, Vec<UserSimplified>> {
+#[get("/get/<status>")]
+pub fn list_friends<'r>(user: JWT, status: &str) -> NetworkResponse<'r, Vec<UserSimplified>> {
     let new_pool = sql::create_pool();
     let pool = match_pool!(new_pool, 500, "Could not connect to database!");
 
     let user_id = user.claims.subject_id;
+    let mut sender_id = user_id;
+    let mut sender_comparator = "!=";
+
+    let status_int: i8 = match status {
+        "pending" => 0,
+        "accepted" => {
+            sender_id = 0;
+            1
+        }
+        "sent" => {
+            sender_comparator = "=";
+            0
+        }
+        _ => {
+            return NetworkResponse::BadRequest(Json(Response {
+                error_code: Some(400),
+                message: "Invalid status!",
+                data: None,
+            }));
+        }
+    };
 
     let list_friends_query = format!(
-        "SELECT u.id, u.username FROM users u JOIN friends f ON (u.id = f.friend_id OR u.id = f.user_id) WHERE (f.user_id = {} OR f.friend_id = {}) AND f.status = 1",
-        user_id, user_id);
+        "SELECT u.id, u.username FROM users u JOIN friends f ON (u.id = f.friend_id OR u.id = f.user_id) WHERE (f.user_id = {} OR f.friend_id = {}) AND f.status = {} AND u.id != {} AND u.is_active = 1 AND f.sender_id {} {}",
+        user_id, user_id, status_int, user_id, sender_comparator, sender_id);
 
+    println!("{}", list_friends_query);
     let friends_query_result: Result<Vec<UserSimplified>, mysql::Error> =
         sql::query_vec(&pool, &list_friends_query);
 
