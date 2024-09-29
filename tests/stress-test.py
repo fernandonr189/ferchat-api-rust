@@ -111,10 +111,13 @@ def test_instance():
         print(e)
 
 if __name__ == "__main__":
+    start = time.time()
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        runs = 100000
+        runs = 10000
         for _ in range(runs):
             executor.submit(test_instance)
+    end = time.time()
+    print(f"Time taken: {end - start}")
     print(f"Signup attempts: {signup_attempts}")
     print(f"Login attempts: {login_attempts}")
     print(f"Hello world attempts: {hello_world_attempts}")
