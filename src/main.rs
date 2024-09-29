@@ -4,6 +4,7 @@ mod util;
 use controllers::auth::hello_token;
 use controllers::auth::login;
 use controllers::auth::signup;
+use controllers::catchers::internal_server_error;
 use controllers::catchers::not_found;
 use controllers::catchers::unauthorized;
 use dotenvy::dotenv;
@@ -20,4 +21,5 @@ fn rocket() -> _ {
         .mount("/", routes![signup])
         .register("/", catchers![not_found])
         .register("/", catchers![unauthorized])
+        .register("/", catchers![internal_server_error])
 }

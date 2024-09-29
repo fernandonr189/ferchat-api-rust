@@ -1,6 +1,9 @@
 use rocket::{request::Request, serde::json::Json};
 
-use crate::models::{response::{NetworkResponse, Response}, user::User};
+use crate::models::{
+    response::{NetworkResponse, Response},
+    user::User,
+};
 
 #[catch(404)]
 pub fn not_found<'r>(_req: &Request) -> NetworkResponse<'r, Vec<User>> {
@@ -16,6 +19,15 @@ pub fn unauthorized<'r>(_req: &Request) -> NetworkResponse<'r, Vec<User>> {
     NetworkResponse::Unauthorized(Json(Response {
         error_code: Some(401),
         message: "Invalid token",
+        data: None,
+    }))
+}
+#[catch(500)]
+pub fn internal_server_error<'r>(_req: &Request) -> NetworkResponse<'r, Vec<User>> {
+    println!("{}", _req);
+    NetworkResponse::InternalServerError(Json(Response {
+        error_code: Some(500),
+        message: "Internal server error",
         data: None,
     }))
 }
