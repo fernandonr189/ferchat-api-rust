@@ -1,15 +1,9 @@
 use crate::match_pool;
-use crate::models::request_models::login_request::LoginRequest;
-use crate::models::request_models::signup_request::SignupRequest;
-use crate::models::response::Data;
-use crate::models::response::NetworkResponse;
-use crate::models::response::Response;
-use crate::models::response::JWT;
+use crate::models::request_models::{login_request::LoginRequest, signup_request::SignupRequest};
+use crate::models::response::{Data, NetworkResponse, Response, JWT};
 use crate::models::response_models::login_response::LoginResponse;
 use crate::models::user::User;
-use crate::util::crypt;
-use crate::util::jwt;
-use crate::util::sql;
+use crate::util::{crypt, jwt, sql};
 use rocket::serde::json::Json;
 
 #[post("/login", format = "json", data = "<req>")]

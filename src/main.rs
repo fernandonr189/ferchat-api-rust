@@ -1,12 +1,8 @@
 mod controllers;
 mod models;
 mod util;
-use controllers::auth::hello_token;
-use controllers::auth::login;
-use controllers::auth::signup;
-use controllers::catchers::internal_server_error;
-use controllers::catchers::not_found;
-use controllers::catchers::unauthorized;
+use controllers::auth::{hello_token, login, signup};
+use controllers::catchers::{internal_server_error, not_found, unauthorized};
 use dotenvy::dotenv;
 
 #[macro_use]
