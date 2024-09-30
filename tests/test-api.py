@@ -121,12 +121,25 @@ def get_sent_requests(token_str: str):
     response = requests.get("http://localhost:8000/friends/get/sent", headers=headers)
     print_response(response)
 
+def cancel_request(token_str: str, target: int):
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {token_str}"
+    }
+    cancel_request = {
+        "friend_id": target,
+    }
+    data = json.dumps(cancel_request)
+    response = requests.post("http://localhost:8000/friends/delete", data=data,headers=headers)
+    print_response(response)
+
 
 if __name__ == "__main__":
     # test_signup(1)
-    token = test_login(1)
+    token = test_login(0)
     test_helloworld(token)
-    # send_friend_request(token, 11)
+    send_friend_request(token, 11)
+    # cancel_request(token, 11)
     # accept_friend_request(token, 10)
     # reject_friend_request(token, 9)
     get_friends(token)
