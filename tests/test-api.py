@@ -1,6 +1,9 @@
 import requests
 import json
 import sys
+import asyncio
+import websockets
+
 def print_colored(text, color, end='\n'):
     colors = {'red': '\x1b[31m', 'green': '\x1b[32m', 'yellow': '\x1b[33m', 'blue': '\x1b[34m'}
     reset = '\x1b[0m'
@@ -133,15 +136,37 @@ def cancel_request(token_str: str, target: int):
     response = requests.post("http://localhost:8000/friends/delete", data=data,headers=headers)
     print_response(response)
 
+async def chat_client():
+    uri = "ws://localhost:8000/echo"  # WebSocket server URI
+
+    # Connect to the WebSocket server
+    async with websockets.connect(uri) as websocket:
+        print("Connected to the server.")
+
+        # Send a message to the server
+        working = True
+        while working:
+            message = input("Enter your message: ")
+            if(message == "exit"):
+                working = False
+                await websocket.close()
+            else:
+                await websocket.send(message)
+
+                # Wait for a response from the server
+                response = await websocket.recv()
+                print(f"Server response: {response}")
+
 
 if __name__ == "__main__":
+    asyncio.get_event_loop().run_until_complete(chat_client())
     # test_signup(1)
-    token = test_login(0)
-    test_helloworld(token)
-    send_friend_request(token, 11)
+    # token = test_login(0)
+    # test_helloworld(token)
+    # send_friend_request(token, 11)
     # cancel_request(token, 11)
     # accept_friend_request(token, 10)
     # reject_friend_request(token, 9)
-    get_friends(token)
-    get_pending_requests(token)
-    get_sent_requests(token)
+    # get_friends(token)
+    # get_pending_requests(token)
+    # get_sent_requests(token)

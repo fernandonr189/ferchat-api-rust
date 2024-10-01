@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+ws = { package = "rocket_ws", version = "0.1.1" }
 rocket = { version = "0.5.1", features = ["json"] }
 mysql = "25.0.1"
 bcrypt = "0.15.1"
