@@ -20,3 +20,11 @@ pub fn echo(ws: ws::WebSocket, target_id: i32, jwt: JWT) -> ws::Channel<'static>
         })
     })
 }
+
+// TODO implementacion de chat en timepo real:
+// 1.- Utilizar el State de rocket para manejar un hashmap con todas las sesiones de chat
+// 2.- Crear un struct para representar los mensajes
+// 3.- Utilizar la librerio tokio para manejar los mpsc's
+// 4.- Asegurar que el struct de mensajes implemente Send de forma segura
+// 5.- Implementar metodos asyncronos para que el websocket lea y envie mensajes simultaneamente
+//
