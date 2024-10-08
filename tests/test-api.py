@@ -137,12 +137,12 @@ def cancel_request(token_str: str, target: int):
     response = requests.post("http://localhost:8000/friends/delete", data=data,headers=headers)
     print_response(response)
 
-async def chat_client(token_str: str, target):
+async def chat_client(token_str: str, target, source):
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {token_str}"
     }
-    uri = "ws://localhost:8000/echo/" + str(target)  # WebSocket server URI
+    uri = "ws://localhost:8000/echo/" + str(target) + "/" + str(source) # WebSocket server URI
 
     # Connect to the WebSocket server
     async with websockets.connect(uri, extra_headers=headers) as websocket:
@@ -160,14 +160,14 @@ async def chat_client(token_str: str, target):
                 await websocket.send(message)
 
                 # Wait for a response from the server
-                response = await websocket.recv()
-                print(f"Server response: {response}")
+                # response = await websocket.recv()
+                # print(f"Server response: {response}")
 
 
 if __name__ == "__main__":
     # test_signup(1)
-    token = test_login(1)
-    asyncio.get_event_loop().run_until_complete(chat_client(token, 3))
+    # token = test_login(1)
+    asyncio.get_event_loop().run_until_complete(chat_client("token", 3, 2))
     # test_helloworld(token)
     # send_friend_request(token, 11)
     # cancel_request(token, 11)

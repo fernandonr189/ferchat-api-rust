@@ -1,27 +1,25 @@
 use crate::models::chat_server::ChatServer;
 use crate::models::chat_server::ChatSession;
 use crate::models::response::JWT;
-use futures::future::BoxFuture;
 use futures::task::noop_waker;
 use rocket::futures;
-use rocket::futures::{SinkExt, StreamExt};
-use rocket::tokio;
+use rocket::futures::StreamExt;
 use rocket::tokio::sync::Mutex;
 use rocket::tokio::sync::MutexGuard;
 use rocket::State;
-use std::future::Future;
-use std::pin::Pin;
 use std::sync::Arc;
+use std::thread::sleep;
 use std::task::{Context, Poll};
+use std::time::Duration;
 
-#[get("/echo/<target_id>")]
+#[get("/echo/<target_id>/<source_id>")]
 pub async fn echo(
     ws: ws::WebSocket,
     target_id: i32,
-    jwt: JWT,
+    source_id: i32,
     chat_server: &State<ChatServer>,
 ) -> ws::Channel<'static> {
-    let user_id = jwt.claims.subject_id;
+    let user_id = source_id;
 
     let session_id = format!(
         "{}-{}",
@@ -51,30 +49,51 @@ pub async fn echo(
 
     ws.channel(move |mut stream| {
         Box::pin(async move {
+            let mut session: MutexGuard<ChatSession> = current_session.lock().await;
+            let waker = noop_waker();
+            let mut cx = Context::from_waker(&waker);
             loop {
-                let mut receiver: MutexGuard<ChatSession> = current_session.lock().await;
-                receiver.receiver.recv();
+                match session.receiver.poll_recv(&mut cx) {
+                    Poll::Ready(message_option) => {
+                        // Send message to user via stream
+                            let msg = match message_option {
+                                Some(msg) => msg,
+                                _ => "No message received".to_string(),
+                            };
+                            println!("Message received from peer: {}", msg);
+                    }
+                    Poll::Pending => {
+                        sleep(Duration::from_secs(1));
+                    }
+                };
+                match stream.poll_next_unpin(&mut cx) {
+                    Poll::Ready(message_option) => {
+                        let message_result = match message_option {
+                            Some(msg_res) => match msg_res {
+                                Ok(msg) => msg,
+                                Err(_) => ws::Message::text("Could not get message"),
+                            },
+                            _ => ws::Message::text("Could not get message"),
+                        };
+                        match session.sender.send(message_result.to_string()) {
+                            Ok(_) => {
+                                println!("Mensage enviado correctamente: {}", message_result.to_string());
+                            },
+                            Err(_) => {
+                                println!("Ocurrio un error al enviar el mensaje: {}", message_result.to_string());
+                            },
+                        }
+                    }
+                    Poll::Pending => {
+                        sleep(Duration::from_secs(1));
+                    },
+                }
             }
-
-            Ok(())
         })
     })
 }
 
-fn poll_my_future(fut: &mut Pin<&mut dyn Future<Output = String>>) -> Poll<String> {
-    // Create a no-op waker (in real-world, you would get this from an executor)
-    let waker = noop_waker();
 
-    // Create a task context from the waker
-    let mut cx = Context::from_waker(&waker);
-
-    // Poll the future
-    fut.as_mut().poll(&mut cx)
-}
-// TODO implementacion de chat en timepo real:
-// 1.- Utilizar el State de rocket para manejar un hashmap con todas las sesiones de chat
-// 2.- Crear un struct para representar los mensajes
-// 3.- Utilizar la librerio tokio para manejar los mpsc's
-// 4.- Asegurar que el struct de mensajes implemente Send de forma segura
-// 5.- Implementar metodos asyncronos para que el websocket lea y envie mensajes simultaneamente
-//
+// bugs:
+// Hay que solucionar lo que sucede al desconectarse el cliente
+// Las sesiones tienen que estar cruzadas, actualmente se envia y recibe del mismo canal causando un bucle
