@@ -1,3 +1,4 @@
+pub mod chat_server;
 pub mod friendship;
 pub mod request_models;
 pub mod response;

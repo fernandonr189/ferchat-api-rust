@@ -6,14 +6,17 @@ use controllers::catchers::{internal_server_error, not_found, unauthorized};
 use controllers::chat::echo;
 use controllers::friends::{accept_request, cancel_request, list_friends, send_request};
 use dotenvy::dotenv;
+use models::chat_server::ChatServer;
 
 #[macro_use]
 extern crate rocket;
 
 #[launch]
 fn rocket() -> _ {
+    let chat_server = ChatServer::default();
     dotenv().ok();
     rocket::build()
+        .manage(chat_server)
         .mount("/", routes![login, hello_token, signup, echo])
         .mount(
             "/friends",
