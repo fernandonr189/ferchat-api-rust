@@ -49,6 +49,7 @@ pub async fn hear(
                     },
                     Err(_) => {
                         println!("Error sending message");
+                        return Ok(());
                     },
                 };
             };
