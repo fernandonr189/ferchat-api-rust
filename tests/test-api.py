@@ -142,7 +142,7 @@ async def chat_client(token_str: str, target, source):
         "Content-Type": "application/json",
         "Authorization": f"Bearer {token_str}"
     }
-    uri = "ws://localhost:8000/echo/" + str(target) + "/" + str(source) # WebSocket server URI
+    uri = "ws://localhost:8000/hear/" + str(target) + "/" + str(source) # WebSocket server URI
 
     # Connect to the WebSocket server
     async with websockets.connect(uri, extra_headers=headers) as websocket:
@@ -151,17 +151,8 @@ async def chat_client(token_str: str, target, source):
         # Send a message to the server
         working = True
         while working:
-            message = input("Enter your message: ")
-            if(message == "exit"):
-                working = False
-                # await websocket.close()
-                print("Closing connection")
-            else:
-                await websocket.send(message)
-
-                # Wait for a response from the server
-                # response = await websocket.recv()
-                # print(f"Server response: {response}")
+            response = await websocket.recv()
+            print(f"Server response: {response}")
 
 
 if __name__ == "__main__":
