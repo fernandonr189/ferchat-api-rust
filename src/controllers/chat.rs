@@ -156,7 +156,3 @@ pub async fn msg<'r>(
         },
     }
 }
-
-// bugs:
-// Hay que solucionar lo que sucede al desconectarse el cliente
-// Las sesiones tienen que estar cruzadas, actualmente se envia y recibe del mismo canal causando un bucle
