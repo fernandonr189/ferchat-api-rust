@@ -1,5 +1,5 @@
-use mysql::prelude::*;
-use mysql::*;
+use mysql::prelude::FromRow;
+use mysql::{from_row, from_row_opt, Row, FromRowError};
 use rocket::serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
@@ -15,7 +15,7 @@ pub struct Friendship {
 impl FromRow for Friendship {
     fn from_row(row: Row) -> Self {
         let (user_id, friend_id, sender_id, status, created_at): (i32, i32, i32, i32, String) =
-            mysql::from_row(row);
+            from_row(row);
         Friendship {
             user_id,
             friend_id,
@@ -24,8 +24,8 @@ impl FromRow for Friendship {
             created_at,
         }
     }
-    fn from_row_opt(row: Row) -> Result<Friendship, mysql::FromRowError> {
-        let (user_id, friend_id, sender_id, status, created_at) = mysql::from_row_opt(row)?;
+    fn from_row_opt(row: Row) -> Result<Friendship, FromRowError> {
+        let (user_id, friend_id, sender_id, status, created_at) = from_row_opt(row)?;
         Ok(Friendship {
             user_id,
             friend_id,

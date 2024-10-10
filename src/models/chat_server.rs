@@ -1,5 +1,4 @@
-use rocket::tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
-use rocket::tokio::sync::Mutex;
+use rocket::tokio::sync::{Mutex, mpsc::{self, UnboundedReceiver, UnboundedSender}};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -20,9 +19,6 @@ impl ChatServer {
         self.session_sender.lock().await.get(session_id).cloned()
     }
     pub async fn get_session_rx(&self, session_id: &str) -> Option<Arc<Mutex<UnboundedReceiver<String>>>> {
-        match self.session_receiver.lock().await.get(session_id) {
-            Some(dat) => Some(dat.clone()),
-            None => None,
-        }
+        self.session_receiver.lock().await.get(session_id).cloned()
     }
 }

@@ -3,13 +3,13 @@ use crate::models::friendship::Friendship;
 use crate::models::request_models::friend_acc_request::FriendAccRequest;
 use crate::models::request_models::friend_req_request::FriendReqRequest;
 use crate::models::response::Data;
-use crate::models::response::{NetworkResponse, Response, JWT};
+use crate::models::response::{NetworkResponse, Response, Jwt};
 use crate::models::user::{User, UserSimplified};
 use crate::util::sql;
 use rocket::serde::json::Json;
 
 #[post("/request", format = "json", data = "<req>")]
-pub fn send_request<'r>(user: JWT, req: Json<FriendReqRequest>) -> NetworkResponse<'r, String> {
+pub fn send_request<'r>(user: Jwt, req: Json<FriendReqRequest>) -> NetworkResponse<'r, String> {
     let new_pool = sql::create_pool();
     let pool = match_pool!(new_pool, 500, "Could not connect to database!");
     let user_id = user.claims.subject_id;
@@ -61,25 +61,25 @@ pub fn send_request<'r>(user: JWT, req: Json<FriendReqRequest>) -> NetworkRespon
 
     match insert_fried_request {
         Ok(_) => {
-            return NetworkResponse::Ok(Json(Response {
+            NetworkResponse::Ok(Json(Response {
                 error_code: Some(200),
                 message: "Friend request sent successfully!",
                 data: None,
-            }));
+            }))
         }
         Err(_err) => {
             println!("Error: {}", _err);
-            return NetworkResponse::InternalServerError(Json(Response {
+            NetworkResponse::InternalServerError(Json(Response {
                 error_code: Some(500),
                 message: "Service is temporarily unavailable",
                 data: None,
-            }));
+            }))
         }
     }
 }
 
 #[post("/accept", format = "json", data = "<req>")]
-pub fn accept_request<'r>(user: JWT, req: Json<FriendAccRequest>) -> NetworkResponse<'r, String> {
+pub fn accept_request<'r>(user: Jwt, req: Json<FriendAccRequest>) -> NetworkResponse<'r, String> {
     let new_pool = sql::create_pool();
     let pool = match_pool!(new_pool, 500, "Could not connect to database!");
     let user_id = user.claims.subject_id;
@@ -97,24 +97,24 @@ pub fn accept_request<'r>(user: JWT, req: Json<FriendAccRequest>) -> NetworkResp
 
     match accept_fried_request {
         Ok(_) => {
-            return NetworkResponse::Ok(Json(Response {
+            NetworkResponse::Ok(Json(Response {
                 error_code: Some(200),
                 message: "Friend request accepted successfully!",
                 data: None,
-            }));
+            }))
         }
         Err(_err) => {
-            return NetworkResponse::InternalServerError(Json(Response {
+            NetworkResponse::InternalServerError(Json(Response {
                 error_code: Some(500),
                 message: "Service is temporarily unavailable",
                 data: None,
-            }));
+            }))
         }
     }
 }
 
 #[get("/get/<status>")]
-pub fn list_friends<'r>(user: JWT, status: &str) -> NetworkResponse<'r, Vec<UserSimplified>> {
+pub fn list_friends<'r>(user: Jwt, status: &str) -> NetworkResponse<'r, Vec<UserSimplified>> {
     let new_pool = sql::create_pool();
     let pool = match_pool!(new_pool, 500, "Could not connect to database!");
 
@@ -150,25 +150,25 @@ pub fn list_friends<'r>(user: JWT, status: &str) -> NetworkResponse<'r, Vec<User
 
     match friends_query_result {
         Ok(friends) => {
-            return NetworkResponse::Ok(Json(Response {
+            NetworkResponse::Ok(Json(Response {
                 error_code: None,
                 message: "Friends retrieved successfully!",
                 data: Some(Data::Model(friends)),
-            }));
+            }))
         }
         Err(_err) => {
-            return NetworkResponse::InternalServerError(Json(Response {
+            NetworkResponse::InternalServerError(Json(Response {
                 error_code: Some(500),
                 message: "Service is temporarily unavailable",
                 data: None,
-            }));
+            }))
         }
     }
 }
 
 #[post("/delete", format = "json", data = "<req>")]
 pub fn cancel_request<'r>(
-    user: JWT,
+    user: Jwt,
     req: Json<FriendReqRequest>,
 ) -> NetworkResponse<'r, Vec<UserSimplified>> {
     let new_pool = sql::create_pool();
@@ -215,18 +215,18 @@ pub fn cancel_request<'r>(
 
     match cancel_fried_request {
         Ok(_) => {
-            return NetworkResponse::Ok(Json(Response {
+            NetworkResponse::Ok(Json(Response {
                 error_code: Some(200),
                 message: "Friend request cancelled successfully!",
                 data: None,
-            }));
+            }))
         }
         Err(_err) => {
-            return NetworkResponse::InternalServerError(Json(Response {
+            NetworkResponse::InternalServerError(Json(Response {
                 error_code: Some(500),
                 message: "Service is temporarily unavailable",
                 data: None,
-            }));
+            }))
         }
     }
 }

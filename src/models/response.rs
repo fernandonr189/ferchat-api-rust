@@ -1,7 +1,7 @@
 use crate::util::jwt;
 use jsonwebtoken::errors::ErrorKind;
 use rocket::http::Status;
-use rocket::request::{self, FromRequest, Outcome, Request};
+use rocket::request::{FromRequest, Outcome, Request};
 use rocket::serde::{json::Json, Deserialize, Serialize};
 
 #[derive(Responder, Debug)]
@@ -42,33 +42,33 @@ pub struct Claims {
 
 #[derive(Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
-pub struct JWT {
+pub struct Jwt {
     pub claims: Claims,
 }
 
 #[rocket::async_trait]
-impl<'r> FromRequest<'r> for JWT {
+impl<'r> FromRequest<'r> for Jwt {
     type Error = String;
 
-    async fn from_request(req: &'r Request<'_>) -> request::Outcome<Self, String> {
+    async fn from_request(req: &'r Request<'_>) -> Outcome<Self, String> {
         fn is_valid(key: &str) -> Result<Claims, ErrorKind> {
-            Ok(jwt::decode_jwt(String::from(key))?)
+            jwt::decode_jwt(String::from(key))
         }
 
         match req.headers().get_one("authorization") {
-            Option::None => {
+            None => {
                 Outcome::Error((Status::Unauthorized, String::from("Missing auth header")))
             }
             Some(key) => match is_valid(key) {
-                Ok(claims) => Outcome::Success(JWT { claims }),
+                Ok(claims) => Outcome::Success(Jwt { claims }),
                 Err(err) => match &err {
-                    jsonwebtoken::errors::ErrorKind::ExpiredSignature => {
+                    ErrorKind::ExpiredSignature => {
                         Outcome::Error((Status::Unauthorized, String::from("Token has expired")))
                     }
-                    jsonwebtoken::errors::ErrorKind::InvalidToken => {
+                    ErrorKind::InvalidToken => {
                         Outcome::Error((Status::Unauthorized, String::from("Token is invalid")))
                     }
-                    jsonwebtoken::errors::ErrorKind::InvalidAlgorithm => {
+                    ErrorKind::InvalidAlgorithm => {
                         Outcome::Error((Status::Unauthorized, String::from("Invalid algorithm")))
                     }
                     _ => Outcome::Error((

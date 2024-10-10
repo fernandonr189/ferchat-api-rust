@@ -1,5 +1,5 @@
-use mysql::prelude::*;
-use mysql::*;
+use mysql::prelude::FromRow;
+use mysql::{from_row, from_row_opt, Row, FromRowError};
 use rocket::serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
@@ -21,11 +21,11 @@ pub struct UserSimplified {
 
 impl FromRow for UserSimplified {
     fn from_row(row: Row) -> Self {
-        let (id, username): (i32, String) = mysql::from_row(row);
+        let (id, username): (i32, String) = from_row(row);
         UserSimplified { username, id }
     }
-    fn from_row_opt(row: Row) -> Result<UserSimplified, mysql::FromRowError> {
-        let (id, username) = mysql::from_row_opt(row)?;
+    fn from_row_opt(row: Row) -> Result<UserSimplified, FromRowError> {
+        let (id, username) = from_row_opt(row)?;
         Ok(UserSimplified { username, id })
     }
 }
@@ -33,7 +33,7 @@ impl FromRow for UserSimplified {
 impl FromRow for User {
     fn from_row(row: Row) -> Self {
         let (id, username, password, email, is_active): (i32, String, String, String, bool) =
-            mysql::from_row(row);
+            from_row(row);
         User {
             username,
             id,
@@ -42,8 +42,8 @@ impl FromRow for User {
             email,
         }
     }
-    fn from_row_opt(row: Row) -> Result<User, mysql::FromRowError> {
-        let (id, username, password, email, is_active) = mysql::from_row_opt(row)?;
+    fn from_row_opt(row: Row) -> Result<User, FromRowError> {
+        let (id, username, password, email, is_active) = from_row_opt(row)?;
         Ok(User {
             username,
             id,

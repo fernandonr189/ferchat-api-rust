@@ -43,7 +43,7 @@ pub async fn hear(
         Box::pin(async move {
             let mut rx_locked = rx.lock().await;
             while let Some(msg) = rx_locked.recv().await {
-                match stream.send(ws::Message::text(&msg.to_string())).await {
+                match stream.send(ws::Message::text(msg.to_string())).await {
                     Ok(_) => {
                         println!("message sent: {}", msg);
                     },
@@ -95,9 +95,10 @@ pub async fn yell(
     ws.channel(move |mut stream| {
         Box::pin(async move {
             while let Some(msg_res) = stream.next().await {
-                let msg = match msg_res {
-                    Ok(msg) => msg,
-                    Err(_) => ws::Message::text("There was an error getting the message"),
+                let msg = if let Ok(msg) = msg_res {
+                    msg
+                } else {
+                    ws::Message::text("There was an error getting the message")
                 };
                 let _ = tx.send(msg.to_text()?.to_string());
             }
@@ -142,18 +143,18 @@ pub async fn msg<'r>(
 
     match tx.send("This is a message sent from another client!".to_string()) {
         Ok(_) => {
-            return NetworkResponse::Ok(Json(Response {
+            NetworkResponse::Ok(Json(Response {
                 error_code: None,
                 message: "Mensaje enviado exitosamente",
                 data: None
-            }));
+            }))
         },
         Err(_) => {
-            return NetworkResponse::InternalServerError(Json(Response {
+            NetworkResponse::InternalServerError(Json(Response {
                 error_code: Some(500),
                 message: "Error al enviar el mensaje",
                 data: None
-            }));
+            }))
         },
     }
 }

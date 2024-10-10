@@ -1,6 +1,6 @@
 use crate::match_pool;
 use crate::models::request_models::{login_request::LoginRequest, signup_request::SignupRequest};
-use crate::models::response::{Data, NetworkResponse, Response, JWT};
+use crate::models::response::{Data, NetworkResponse, Response, Jwt};
 use crate::models::response_models::login_response::LoginResponse;
 use crate::models::user::User;
 use crate::util::{crypt, jwt, sql};
@@ -30,14 +30,14 @@ pub fn login<'r>(req: Json<LoginRequest>) -> NetworkResponse<'r, LoginResponse> 
                                 username: user.username,
                                 email: user.email,
                             };
-                            return NetworkResponse::Ok(Json(Response {
+                            NetworkResponse::Ok(Json(Response {
                                 error_code: None,
                                 message: "Login successful!",
                                 data: Some(Data::Model(login_response)),
-                            }));
+                            }))
                         }
                         Err(_err) => {
-                            return NetworkResponse::InternalServerError(Json(Response {
+                            NetworkResponse::InternalServerError(Json(Response {
                                 error_code: Some(500),
                                 message: "Service is temporarily unavailable",
                                 data: None,
@@ -45,15 +45,15 @@ pub fn login<'r>(req: Json<LoginRequest>) -> NetworkResponse<'r, LoginResponse> 
                         }
                     }
                 } else {
-                    return NetworkResponse::BadRequest(Json(Response {
+                    NetworkResponse::BadRequest(Json(Response {
                         error_code: Some(400),
                         message: "Incorrect password!",
                         data: None,
-                    }));
+                    }))
                 }
             }
             _ => {
-                return NetworkResponse::BadRequest(Json(Response {
+                NetworkResponse::BadRequest(Json(Response {
                     error_code: Some(400),
                     message: "User does not exist!",
                     data: None,
@@ -61,7 +61,7 @@ pub fn login<'r>(req: Json<LoginRequest>) -> NetworkResponse<'r, LoginResponse> 
             }
         },
         Err(_err) => {
-            return NetworkResponse::InternalServerError(Json(Response {
+            NetworkResponse::InternalServerError(Json(Response {
                 error_code: Some(500),
                 message: "Service is temporarily unavailable",
                 data: None,
@@ -85,15 +85,12 @@ pub fn signup<'r>(req: Json<SignupRequest>) -> NetworkResponse<'r, String> {
     );
 
     match user {
-        Ok(optional_user) => match optional_user {
-            Some(_user) => {
-                return NetworkResponse::BadRequest(Json(Response {
-                    error_code: Some(400),
-                    message: "User already exists!",
-                    data: None,
-                }));
-            }
-            _ => {}
+        Ok(optional_user) => if let Some(_user) = optional_user {
+            return NetworkResponse::BadRequest(Json(Response {
+                error_code: Some(400),
+                message: "User already exists!",
+                data: None,
+            }));
         },
         Err(_err) => {
             return NetworkResponse::InternalServerError(Json(Response {
@@ -124,14 +121,14 @@ pub fn signup<'r>(req: Json<SignupRequest>) -> NetworkResponse<'r, String> {
     let signup_result = sql::insert(&pool, &query);
     match signup_result {
         Ok(_) => {
-            return NetworkResponse::Ok(Json(Response {
+            NetworkResponse::Ok(Json(Response {
                 error_code: None,
                 message: "Signup successful!",
                 data: None,
-            }));
+            }))
         }
         Err(_err) => {
-            return NetworkResponse::InternalServerError(Json(Response {
+            NetworkResponse::InternalServerError(Json(Response {
                 error_code: Some(500),
                 message: "Service is temporarily unavailable",
                 data: None,
@@ -142,7 +139,7 @@ pub fn signup<'r>(req: Json<SignupRequest>) -> NetworkResponse<'r, String> {
 
 #[get("/hello")]
 // 👇 New!
-pub fn hello_token<'r>(user: JWT) -> NetworkResponse<'r, String> {
+pub fn hello_token<'r>(user: Jwt) -> NetworkResponse<'r, String> {
     NetworkResponse::Ok(Json(Response {
         error_code: None,
         message: "You are authenticated!",
