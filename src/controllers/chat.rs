@@ -132,7 +132,7 @@ pub async fn yell(
                 };
                 let _ = tx.send(msg_res.to_string());
             };
-            
+            // Find a way to poll the stream for incoming messages  without unpining it
             Ok(())
         })
     })
