@@ -72,7 +72,7 @@ def create_user() -> tuple[str, str]:
         increment_signup_errors()
         raise Exception("User not created")
     else:
-        return (email, password)
+        return email, password
 
 def login_user(user: tuple[str, str]) -> str:
     increment_login_attempts()

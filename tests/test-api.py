@@ -1,9 +1,10 @@
-import requests
 import json
 import sys
+
 import asyncio
+import requests
 import websockets
-import time
+
 
 def print_colored(text, color, end='\n'):
     colors = {'red': '\x1b[31m', 'green': '\x1b[32m', 'yellow': '\x1b[33m', 'blue': '\x1b[34m'}
@@ -23,21 +24,20 @@ users = [
     }
 ]
 
-headers = {
-    "Content-Type": "application/json",
-}
-
 
 def print_response(response):
     print("Status code: " + str(response.status_code))
     try:
-        print(f"Response: {response.json()['data']['Model'] if response.json()['data'] != None else response.json()['message']}")
+        print(f"Response: {response.json()['data']['Model'] if response.json()['data'] is not None else response.json()['message']}")
     except Exception as e:
         print("Exception" + str(e))
         print(response.text)
 
 
 def test_login(user: int) -> str | None:
+    headers = {
+        "Content-Type": "application/json",
+    }
     login_request = users[user]
     data = json.dumps(login_request)
     response = requests.post("http://localhost:8000/login", headers=headers, data=data)
@@ -55,6 +55,9 @@ def test_helloworld(token_str: str):
     print_response(response)
 
 def test_signup(user: int):
+    headers = {
+        "Content-Type": "application/json",
+    }
     sigup_request = users[user]
     data = json.dumps(sigup_request)
     response = requests.post("http://localhost:8000/signup", headers=headers, data=data)
