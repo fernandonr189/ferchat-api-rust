@@ -159,9 +159,9 @@ async def chat_client(token_str: str, target, source):
 
 
 if __name__ == "__main__":
-    # test_signup(1)
-    # token = test_login(1)
-    asyncio.get_event_loop().run_until_complete(chat_client("token", 3, 2))
+    test_signup(0)
+    token = test_login(0)
+    # asyncio.get_event_loop().run_until_complete(chat_client("token", 3, 2))
     # test_helloworld(token)
     # send_friend_request(token, 11)
     # cancel_request(token, 11)
