@@ -674,6 +674,7 @@ dependencies = [
  "mysql",
  "rocket",
  "rocket_ws",
+ "serde",
 ]
 
 [[package]]
