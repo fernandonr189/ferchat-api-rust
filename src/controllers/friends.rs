@@ -3,7 +3,7 @@ use crate::models::friendship::Friendship;
 use crate::models::request_models::friend_acc_request::FriendAccRequest;
 use crate::models::request_models::friend_req_request::FriendReqRequest;
 use crate::models::response::Data;
-use crate::models::response::{NetworkResponse, Response, Jwt};
+use crate::models::response::{Jwt, NetworkResponse, Response};
 use crate::models::user::{User, UserSimplified};
 use crate::util::sql;
 use rocket::serde::json::Json;
@@ -60,13 +60,11 @@ pub fn send_request<'r>(user: Jwt, req: Json<FriendReqRequest>) -> NetworkRespon
         sql::insert(&pool, &insert_friend_request_query);
 
     match insert_fried_request {
-        Ok(_) => {
-            NetworkResponse::Ok(Json(Response {
-                error_code: Some(200),
-                message: "Friend request sent successfully!",
-                data: None,
-            }))
-        }
+        Ok(_) => NetworkResponse::Ok(Json(Response {
+            error_code: Some(200),
+            message: "Friend request sent successfully!",
+            data: None,
+        })),
         Err(_err) => {
             println!("Error: {}", _err);
             NetworkResponse::InternalServerError(Json(Response {
@@ -96,20 +94,16 @@ pub fn accept_request<'r>(user: Jwt, req: Json<FriendAccRequest>) -> NetworkResp
         sql::insert(&pool, &accept_friend_request_query);
 
     match accept_fried_request {
-        Ok(_) => {
-            NetworkResponse::Ok(Json(Response {
-                error_code: Some(200),
-                message: "Friend request accepted successfully!",
-                data: None,
-            }))
-        }
-        Err(_err) => {
-            NetworkResponse::InternalServerError(Json(Response {
-                error_code: Some(500),
-                message: "Service is temporarily unavailable",
-                data: None,
-            }))
-        }
+        Ok(_) => NetworkResponse::Ok(Json(Response {
+            error_code: Some(200),
+            message: "Friend request accepted successfully!",
+            data: None,
+        })),
+        Err(_err) => NetworkResponse::InternalServerError(Json(Response {
+            error_code: Some(500),
+            message: "Service is temporarily unavailable",
+            data: None,
+        })),
     }
 }
 
@@ -149,20 +143,16 @@ pub fn list_friends<'r>(user: Jwt, status: &str) -> NetworkResponse<'r, Vec<User
         sql::query_vec(&pool, &list_friends_query);
 
     match friends_query_result {
-        Ok(friends) => {
-            NetworkResponse::Ok(Json(Response {
-                error_code: None,
-                message: "Friends retrieved successfully!",
-                data: Some(Data::Model(friends)),
-            }))
-        }
-        Err(_err) => {
-            NetworkResponse::InternalServerError(Json(Response {
-                error_code: Some(500),
-                message: "Service is temporarily unavailable",
-                data: None,
-            }))
-        }
+        Ok(friends) => NetworkResponse::Ok(Json(Response {
+            error_code: None,
+            message: "Friends retrieved successfully!",
+            data: Some(Data::Model(friends)),
+        })),
+        Err(_err) => NetworkResponse::InternalServerError(Json(Response {
+            error_code: Some(500),
+            message: "Service is temporarily unavailable",
+            data: None,
+        })),
     }
 }
 
@@ -214,19 +204,15 @@ pub fn cancel_request<'r>(
         sql::insert(&pool, &cancel_friend_request_query);
 
     match cancel_fried_request {
-        Ok(_) => {
-            NetworkResponse::Ok(Json(Response {
-                error_code: Some(200),
-                message: "Friend request cancelled successfully!",
-                data: None,
-            }))
-        }
-        Err(_err) => {
-            NetworkResponse::InternalServerError(Json(Response {
-                error_code: Some(500),
-                message: "Service is temporarily unavailable",
-                data: None,
-            }))
-        }
+        Ok(_) => NetworkResponse::Ok(Json(Response {
+            error_code: Some(200),
+            message: "Friend request cancelled successfully!",
+            data: None,
+        })),
+        Err(_err) => NetworkResponse::InternalServerError(Json(Response {
+            error_code: Some(500),
+            message: "Service is temporarily unavailable",
+            data: None,
+        })),
     }
 }

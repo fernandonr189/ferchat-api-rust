@@ -56,9 +56,7 @@ impl<'r> FromRequest<'r> for Jwt {
         }
 
         match req.headers().get_one("authorization") {
-            None => {
-                Outcome::Error((Status::Unauthorized, String::from("Missing auth header")))
-            }
+            None => Outcome::Error((Status::Unauthorized, String::from("Missing auth header"))),
             Some(key) => match is_valid(key) {
                 Ok(claims) => Outcome::Success(Jwt { claims }),
                 Err(err) => match &err {

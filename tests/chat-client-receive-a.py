@@ -16,21 +16,6 @@ users = [
         "email": "finr32@outlook.com"
     }
 ]
-async def read_from_socket(read_uri, user):
-    async with websockets.connect(read_uri, extra_headers=get_auth(user)) as read_socket:
-        while True:
-            try:
-                message = await read_socket.recv()
-                print(f"Received: {message}")
-            except websockets.ConnectionClosed:
-                print("Read connection closed.")
-                break
-
-async def main(read_uri, user):
-    await asyncio.gather(
-        read_from_socket(read_uri, user),
-    )
-
 def get_auth(user):
     headers = {
         "Content-Type": "application/json",
@@ -43,7 +28,12 @@ def get_auth(user):
         "Authorization": f"Bearer {response.json()['data']['Model']['token']}"
     }
     return headers
+async def test_client(user):
+    async with websockets.connect("ws://localhost:8000/session", extra_headers=get_auth(user) ) as websocket:
+        while True:
+            response = await websocket.recv()
+            # await websocket.send(f"Pong: {response}")
+            print(f"Received from server: {response}")
 
 if __name__ == "__main__":
-    read_uri = "ws://localhost:8000/hear/11"  # Replace with your reading WebSocket URI
-    asyncio.run(main(read_uri, 0))
+    asyncio.run(test_client(1))

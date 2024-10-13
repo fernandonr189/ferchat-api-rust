@@ -1,5 +1,5 @@
 use mysql::prelude::FromRow;
-use mysql::{from_row, from_row_opt, Row, FromRowError};
+use mysql::{from_row, from_row_opt, FromRowError, Row};
 use rocket::serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]

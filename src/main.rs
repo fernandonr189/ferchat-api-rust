@@ -3,9 +3,9 @@ mod models;
 mod util;
 use controllers::auth::{hello_token, login, signup};
 use controllers::catchers::{internal_server_error, not_found, unauthorized};
-use controllers::session::{session};
-use controllers::chat::{msg};
+use controllers::chat::msg;
 use controllers::friends::{accept_request, cancel_request, list_friends, send_request};
+use controllers::session::session;
 use dotenvy::dotenv;
 use models::event_server::EventServer;
 
