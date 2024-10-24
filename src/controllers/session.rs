@@ -27,43 +27,40 @@ pub async fn session(
         Box::pin(async move {
             let mut session_rx = session_rx_mutex.lock().await;
             while let Some(msg) = session_rx.recv().await {
-                //println!("Message received {}", json::to_string(&msg).unwrap());
-                match stream
+                let _sent_res = match stream
                     .send(Message::Text(json::to_string(&msg).unwrap()))
                     .await
                 {
-                    Ok(_) => {
-                        println!("Message sent!");
-                        let pong = future::timeout(Duration::from_secs(2), stream.next()).await;
-                        match pong {
-                            Ok(msg_opt_res) => {
-                                match msg_opt_res {
-                                    None => {
-                                        return Ok(());
-                                    }
-                                    Some(msg_res) => match msg_res {
-                                        Ok(msg) => match msg {
-                                            Message::Text(_) => {
-                                            }
-                                            _ => {
-                                                return Ok(());
-                                            }
-                                        },
-                                        Err(_) => {
-                                            return Ok(());
-                                        }
-                                    },
-                                };
-                            }
-                            Err(_) => {
-                                return Ok(());
-                            }
-                        }
-                    }
+                    Ok(res) => res,
                     Err(_) => {
                         return Ok(());
                     }
-                }
+                };
+                let pong = future::timeout(Duration::from_secs(2), stream.next()).await;
+                let opt_pong = match pong {
+                    Ok(msg_opt_res) => msg_opt_res,
+                    Err(_) => {
+                        return Ok(());
+                    }
+                };
+                let msg_res = match opt_pong {
+                    Some(msg_res) => msg_res,
+                    None => {
+                        return Ok(());
+                    }
+                };
+                let msg_type = match msg_res {
+                    Ok(msg_type) => msg_type,
+                    Err(_) => {
+                        return Ok(());
+                    }
+                };
+                match msg_type {
+                    Message::Text(_) => {}
+                    _ => {
+                        return Ok(());
+                    }
+                };
             }
             Ok(())
         })

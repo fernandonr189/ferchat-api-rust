@@ -18,49 +18,53 @@ pub fn login<'r>(req: Json<LoginRequest>) -> NetworkResponse<'r, LoginResponse> 
     );
 
     let user_result: Result<Option<User>, mysql::Error> = sql::query_element(&pool, &query);
-    match user_result {
-        Ok(optional_user) => match optional_user {
-            Some(user) => {
-                if crypt::verify_password(&login_request.password, &user.password.unwrap()) {
-                    let token = jwt::create_jwt(user.id);
-                    match token {
-                        Ok(token_str) => {
-                            let login_response = LoginResponse {
-                                token: token_str,
-                                username: user.username,
-                                email: user.email,
-                            };
-                            NetworkResponse::Ok(Json(Response {
-                                error_code: None,
-                                message: "Login successful!",
-                                data: Some(Data::Model(login_response)),
-                            }))
-                        }
-                        Err(_err) => NetworkResponse::InternalServerError(Json(Response {
-                            error_code: Some(500),
-                            message: "Service is temporarily unavailable",
-                            data: None,
-                        })),
-                    }
-                } else {
-                    NetworkResponse::BadRequest(Json(Response {
-                        error_code: Some(400),
-                        message: "Incorrect password!",
-                        data: None,
-                    }))
-                }
-            }
-            _ => NetworkResponse::BadRequest(Json(Response {
+    let usr_opt = match user_result {
+        Ok(optional_user) => optional_user,
+        Err(_err) => {
+            return NetworkResponse::InternalServerError(Json(Response {
+                error_code: Some(500),
+                message: "Service is temporarily unavailable",
+                data: None,
+            }))
+        }
+    };
+    let user = match usr_opt {
+        Some(user) => user,
+        _ => {
+            return NetworkResponse::BadRequest(Json(Response {
                 error_code: Some(400),
                 message: "User does not exist!",
                 data: None,
-            })),
-        },
-        Err(_err) => NetworkResponse::InternalServerError(Json(Response {
-            error_code: Some(500),
-            message: "Service is temporarily unavailable",
+            }))
+        }
+    };
+    if crypt::verify_password(&login_request.password, &user.password.unwrap()) {
+        let token_str = match jwt::create_jwt(user.id) {
+            Ok(token_str) => token_str,
+            Err(_err) => {
+                return NetworkResponse::InternalServerError(Json(Response {
+                    error_code: Some(500),
+                    message: "Service is temporarily unavailable",
+                    data: None,
+                }))
+            }
+        };
+        let login_response = LoginResponse {
+            token: token_str,
+            username: user.username,
+            email: user.email,
+        };
+        NetworkResponse::Ok(Json(Response {
+            error_code: None,
+            message: "Login successful!",
+            data: Some(Data::Model(login_response)),
+        }))
+    } else {
+        NetworkResponse::BadRequest(Json(Response {
+            error_code: Some(400),
+            message: "Incorrect password!",
             data: None,
-        })),
+        }))
     }
 }
 
@@ -78,16 +82,8 @@ pub fn signup<'r>(req: Json<SignupRequest>) -> NetworkResponse<'r, String> {
         ),
     );
 
-    match user {
-        Ok(optional_user) => {
-            if let Some(_user) = optional_user {
-                return NetworkResponse::BadRequest(Json(Response {
-                    error_code: Some(400),
-                    message: "User already exists!",
-                    data: None,
-                }));
-            }
-        }
+    let user_opt = match user {
+        Ok(optional_user) => optional_user,
         Err(_err) => {
             return NetworkResponse::InternalServerError(Json(Response {
                 error_code: Some(500),
@@ -95,6 +91,13 @@ pub fn signup<'r>(req: Json<SignupRequest>) -> NetworkResponse<'r, String> {
                 data: None,
             }))
         }
+    };
+    if let Some(_user) = user_opt {
+        return NetworkResponse::BadRequest(Json(Response {
+            error_code: Some(400),
+            message: "User already exists!",
+            data: None,
+        }));
     }
 
     let query = format!(
