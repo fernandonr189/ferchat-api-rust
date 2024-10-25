@@ -55,26 +55,32 @@ impl<'r> FromRequest<'r> for Jwt {
             jwt::decode_jwt(String::from(key))
         }
 
-        match req.headers().get_one("authorization") {
-            None => Outcome::Error((Status::Unauthorized, String::from("Missing auth header"))),
-            Some(key) => match is_valid(key) {
-                Ok(claims) => Outcome::Success(Jwt { claims }),
-                Err(err) => match &err {
-                    ErrorKind::ExpiredSignature => {
-                        Outcome::Error((Status::Unauthorized, String::from("Token has expired")))
-                    }
-                    ErrorKind::InvalidToken => {
-                        Outcome::Error((Status::Unauthorized, String::from("Token is invalid")))
-                    }
-                    ErrorKind::InvalidAlgorithm => {
-                        Outcome::Error((Status::Unauthorized, String::from("Invalid algorithm")))
-                    }
-                    _ => Outcome::Error((
-                        Status::Unauthorized,
-                        String::from("Unknown error decoding token"),
-                    )),
-                },
-            },
+        let key = match req.headers().get_one("authorization") {
+            None => {
+                return Outcome::Error((Status::Unauthorized, String::from("Missing auth header")))
+            }
+            Some(key) => key,
+        };
+
+        let error = match is_valid(key) {
+            Ok(claims) => return Outcome::Success(Jwt { claims }),
+            Err(err) => err,
+        };
+
+        match error {
+            ErrorKind::ExpiredSignature => {
+                Outcome::Error((Status::Unauthorized, String::from("Token has expired")))
+            }
+            ErrorKind::InvalidToken => {
+                Outcome::Error((Status::Unauthorized, String::from("Token is invalid")))
+            }
+            ErrorKind::InvalidAlgorithm => {
+                Outcome::Error((Status::Unauthorized, String::from("Invalid algorithm")))
+            }
+            _ => Outcome::Error((
+                Status::Unauthorized,
+                String::from("Unknown error decoding token"),
+            )),
         }
     }
 }
