@@ -27,7 +27,7 @@ pub async fn session(
         Box::pin(async move {
             let mut session_rx = session_rx_mutex.lock().await;
             while let Some(msg) = session_rx.recv().await {
-                let _sent_res = match stream
+                match stream
                     .send(Message::Text(json::to_string(&msg).unwrap()))
                     .await
                 {

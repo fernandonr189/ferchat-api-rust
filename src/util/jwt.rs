@@ -35,7 +35,7 @@ pub fn decode_jwt(token: String) -> Result<Claims, ErrorKind> {
     let token = token.trim_start_matches("Bearer").trim();
     let secret = env::var("JWT_SECRET").expect("JWT_SECRET must be set.");
     match decode::<Claims>(
-        &token,
+        token,
         &DecodingKey::from_secret(secret.as_bytes()),
         &Validation::new(Algorithm::HS256),
     ) {
