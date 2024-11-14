@@ -74,6 +74,30 @@ pub fn signup<'r>(req: Json<SignupRequest>) -> NetworkResponse<'r, String> {
     let pool = match_pool!(new_pool, 500, "Could not connect to database!");
     let signup_request = req.into_inner();
 
+    if !signup_request.verify_email() {
+        return NetworkResponse::BadRequest(Json(Response {
+            error_code: Some(400),
+            message: "Invalid email",
+            data: None,
+        }));
+    }
+
+    if !signup_request.verify_username() {
+        return NetworkResponse::BadRequest(Json(Response {
+            error_code: Some(400),
+            message: "Invalid username",
+            data: None,
+        }));
+    }
+
+    if !signup_request.verify_password() {
+        return NetworkResponse::BadRequest(Json(Response {
+            error_code: Some(400),
+            message: "Insecure password",
+            data: None,
+        }));
+    }
+
     let user: Result<Option<User>, mysql::Error> = sql::query_element(
         &pool,
         &format!(
