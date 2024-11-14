@@ -8,6 +8,7 @@ use controllers::friends::{accept_request, cancel_request, list_friends, send_re
 use controllers::session::session;
 use dotenvy::dotenv;
 use models::event_server::EventServer;
+use util::cors::Cors;
 
 #[macro_use]
 extern crate rocket;
@@ -17,6 +18,7 @@ fn rocket() -> _ {
     let event_server = EventServer::default();
     dotenv().ok();
     rocket::build()
+        .attach(Cors)
         .manage(event_server)
         .mount("/", routes![login, hello_token, signup, session, msg])
         .mount(
