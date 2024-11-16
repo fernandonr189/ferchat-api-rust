@@ -18,6 +18,11 @@ fn rocket() -> _ {
     let event_server = EventServer::default();
     dotenv().ok();
     rocket::build()
+        .configure(rocket::Config {
+            address: "0.0.0.0".parse().unwrap(),
+            port: 8000,
+            ..Default::default()
+        })
         .attach(Cors)
         .manage(event_server)
         .mount("/", routes![login, hello_token, signup, session, msg])
