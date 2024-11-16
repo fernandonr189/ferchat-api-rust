@@ -3,7 +3,7 @@ use mysql::*;
 use prelude::{FromRow, Queryable};
 
 pub fn create_pool() -> Result<Pool, Error> {
-    let url = "mysql://root:password@localhost:3306/users?pool_min=0&pool_max=1000";
+    let url = "mysql://root:password@db:3306/users?pool_min=0&pool_max=1000";
     Pool::new(url)
 }
 
