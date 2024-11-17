@@ -1,7 +1,9 @@
 use crate::util::jwt;
 use jsonwebtoken::errors::ErrorKind;
+use rocket::http::Header;
 use rocket::http::Status;
 use rocket::request::{FromRequest, Outcome, Request};
+use rocket::response::Responder;
 use rocket::serde::{json::Json, Deserialize, Serialize};
 
 #[derive(Responder, Debug)]
@@ -16,6 +18,23 @@ pub enum NetworkResponse<'r, T> {
     NotFound(Json<Response<'r, T>>),
     #[response(status = 500)]
     InternalServerError(Json<Response<'r, T>>),
+}
+
+pub struct CorsResponder;
+
+impl<'r> Responder<'r, 'static> for CorsResponder {
+    fn respond_to(self, request: &'r Request<'_>) -> rocket::response::Result<'static> {
+        rocket::Response::build()
+            .header(Header::new(
+                "Access-Control-Allow-Methods",
+                "POST, GET, OPTIONS",
+            ))
+            .header(Header::new("Access-Control-Allow-Origin", "*"))
+            .header(Header::new("Access-Control-Allow-Headers", "*"))
+            .header(Header::new("Access-Control-Allow-Credentials", "true"))
+            .status(Status::Ok)
+            .ok()
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
