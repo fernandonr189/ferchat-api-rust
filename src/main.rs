@@ -9,6 +9,9 @@ use controllers::options::get_options;
 use controllers::session::session;
 use dotenvy::dotenv;
 use models::event_server::EventServer;
+use rocket::fairing::{Fairing, Info, Kind};
+use rocket::http::Header;
+use rocket::{Request, Response};
 
 #[macro_use]
 extern crate rocket;
@@ -23,6 +26,7 @@ fn rocket() -> _ {
             port: 8000,
             ..Default::default()
         })
+        .attach(AccessControl)
         .manage(event_server)
         .mount("/", routes![login, hello_token, signup, session, msg, get_options])
         .mount(
@@ -33,4 +37,20 @@ fn rocket() -> _ {
             "/",
             catchers![not_found, unauthorized, internal_server_error],
         )
+}
+
+struct AccessControl;
+
+#[rocket::async_trait]
+impl Fairing for AccessControl {
+    fn info(&self) -> Info {
+        Info {
+            name: "Adding headers",
+            kind: Kind::Response,
+        }
+    }
+
+    async fn on_response<'r>(&self, _: &'r Request<'_>, response: &mut Response<'r>) {
+        response.set_header(Header::new("Access-Control-Allow-Origin", "*"));
+    }
 }

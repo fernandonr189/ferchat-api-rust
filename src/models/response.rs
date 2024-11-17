@@ -23,7 +23,7 @@ pub enum NetworkResponse<'r, T> {
 pub struct CorsResponder;
 
 impl<'r> Responder<'r, 'static> for CorsResponder {
-    fn respond_to(self, request: &'r Request<'_>) -> rocket::response::Result<'static> {
+    fn respond_to(self, _request: &'r Request<'_>) -> rocket::response::Result<'static> {
         rocket::Response::build()
             .header(Header::new(
                 "Access-Control-Allow-Methods",
