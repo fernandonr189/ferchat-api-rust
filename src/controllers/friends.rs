@@ -216,3 +216,59 @@ pub fn cancel_request<'r>(
         })),
     }
 }
+
+#[get("/find")]
+pub fn get_users_no_input<'r>() -> NetworkResponse<'r, Vec<User>> {
+    let new_pool = sql::create_pool();
+    let pool = match_pool!(new_pool, 500, "Could not connect to database!");
+
+    let find_users_query = format!("SELECT id, username, password, email, is_active FROM users", );
+
+    let find_users_request: Result<Vec<User>, mysql::Error> =
+        sql::query_vec(&pool, &find_users_query);
+
+    match find_users_request {
+        Ok(users) => {
+            return NetworkResponse::Ok(Json(Response {
+                error_code: Some(200),
+                message: "users found!",
+                data: Some(Data::Model(users)),
+            }));
+        }
+        Err(_) => {
+            return NetworkResponse::InternalServerError(Json(Response {
+                error_code: Some(200),
+                message: "Could not find users",
+                data: None,
+            }));
+        }
+    };
+}
+
+#[get("/find/<input>")]
+pub fn get_users<'r>(input: &str) -> NetworkResponse<'r, Vec<User>> {
+    let new_pool = sql::create_pool();
+    let pool = match_pool!(new_pool, 500, "Could not connect to database!");
+    let find_users_query = format!("SELECT id, username, password, email, is_active FROM users WHERE username LIKE \"%{}%\"", input);
+    
+    print!("{}", find_users_query);
+    let find_users_request: Result<Vec<User>, mysql::Error> =
+        sql::query_vec(&pool, &find_users_query);
+
+    match find_users_request {
+        Ok(users) => {
+            return NetworkResponse::Ok(Json(Response {
+                error_code: Some(200),
+                message: "users found!",
+                data: Some(Data::Model(users)),
+            }));
+        }
+        Err(_) => {
+            return NetworkResponse::InternalServerError(Json(Response {
+                error_code: Some(200),
+                message: "Could not find users",
+                data: None,
+            }));
+        }
+    };
+}

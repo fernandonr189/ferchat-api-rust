@@ -4,7 +4,7 @@ mod util;
 use controllers::auth::{hello_token, login, signup};
 use controllers::catchers::{internal_server_error, not_found, unauthorized};
 use controllers::chat::msg;
-use controllers::friends::{accept_request, cancel_request, list_friends, send_request};
+use controllers::friends::{accept_request, cancel_request, list_friends, send_request, get_users, get_users_no_input};
 use controllers::options::get_options;
 use controllers::session::session;
 use dotenvy::dotenv;
@@ -28,10 +28,13 @@ fn rocket() -> _ {
         })
         .attach(AccessControl)
         .manage(event_server)
-        .mount("/", routes![login, hello_token, signup, session, msg, get_options])
+        .mount(
+            "/",
+            routes![login, hello_token, signup, session, msg, get_options],
+        )
         .mount(
             "/friends",
-            routes![send_request, accept_request, list_friends, cancel_request],
+            routes![send_request, accept_request, list_friends, cancel_request, get_users, get_users_no_input],
         )
         .register(
             "/",
