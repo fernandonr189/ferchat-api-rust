@@ -29,6 +29,7 @@ impl<'r> Responder<'r, 'static> for CorsResponder {
                 "Access-Control-Allow-Methods",
                 "POST, GET, OPTIONS",
             ))
+            .header(Header::new("Access-Control-Max-Age", "86400"))
             .header(Header::new("Access-Control-Allow-Origin", "*"))
             .header(Header::new("Access-Control-Allow-Headers", "*"))
             .header(Header::new("Access-Control-Allow-Credentials", "true"))
